@@ -68,3 +68,5 @@ export { default as KampanyaKuralWizard } from './components/KampanyaKuralWizard
 export { default as KampanyaKuralPopup } from './components/KampanyaKuralPopup';
 export { default as KampanyaAiModal } from './components/KampanyaAiModal';
 export { default as TopluFiyatGuncellemeModal } from './components/TopluFiyatGuncellemeModal';
+export { default as MarkaFormPopup } from './pages/MarkaFormPopup';
+export { default as UrunGrupFormPage } from './pages/UrunGrupFormPage';
