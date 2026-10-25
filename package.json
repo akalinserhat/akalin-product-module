@@ -1,0 +1,37 @@
+{
+  "name": "@akalin/product_module",
+  "version": "1.0.0",
+  "description": "Webakus ERP ekosistemi için bağımsız, yeniden kullanılabilir ürün, hizmet, kategori, paket/set, fiyat listesi ve kampanya yönetim modülü.",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "webakus",
+    "erp",
+    "product",
+    "service",
+    "inventory",
+    "catalog",
+    "campaign",
+    "price-list",
+    "bundle",
+    "akalin"
+  ],
+  "author": "Akalin Software",
+  "license": "UNLICENSED",
+  "peerDependencies": {
+    "@akalin/module_core": "*",
+    "@akalin/ui": "*",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
+    "react-router-dom": ">=6.0.0",
+    "react-i18next": "*",
+    "react-hot-toast": "*",
+    "lucide-react": "*",
+    "axios": "*",
+    "xlsx": "*"
+  }
+}
