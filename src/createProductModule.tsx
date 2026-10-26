@@ -4,6 +4,7 @@ import { type IModuleDefinition } from '@akalin/module_core';
 import { ModuleSettingsRegistry } from '@akalin/ui';
 import { ProductServiceProvider, IProductServiceAdapter, defaultProductService } from './adapters/ProductServiceContext';
 import UrunHizmetModulAyarlariComponent from './components/UrunHizmetModulAyarlari';
+import { productCards, productDocuments, productReports } from './definitions/entities';
 
 export interface CreateProductModuleOptions {
   id?: string;
@@ -83,39 +84,20 @@ export function createProductModule(options: CreateProductModuleOptions = {}): I
     icon: React.createElement(Box, { size: 20 }),
     iconName: 'Package',
     order,
-    cards: [
-      {
-        id: 'urun',
-        category: 'kart',
-        titleKey: 'Ürün ve Hizmet Kartı',
-        route: '/urunVeHizmetler',
-        useStandardCrud: true,
-        customActions: [
-          { action: 'fiyat-degistir', labelKey: 'Fiyat Değiştirme', description: 'Satış fiyatlarını ve KDV oranlarını düzenleme' },
-          { action: 'maliyet-gor', labelKey: 'Maliyet Görme', description: 'Ürün alış ve maliyet fiyatlarını görme' }
-        ]
-      },
-      {
-        id: 'kategori',
-        category: 'kart',
-        titleKey: 'Ürün Grubu ve Kategori',
-        useStandardCrud: true
-      },
-      {
-        id: 'fiyat-listesi',
-        category: 'kart',
-        titleKey: 'Fiyat Listesi',
-        route: '/fiyat-listeleri',
-        useStandardCrud: true
-      },
-      {
-        id: 'paket-set',
-        category: 'kart',
-        titleKey: 'Paket & Set Kartı',
-        route: '/paket-ve-setler',
-        useStandardCrud: true
-      }
+    strictEntityRegistration: true,
+    whitelistedRoutes: [
+      'markalar/form',
+      'birimler/form',
+      'urun-ve-hizmetler/form',
+      'urun-gruplari/form',
+      '/popup/markalar/form',
+      '/popup/birimler/form',
+      '/popup/urun-ve-hizmetler/form',
+      '/popup/urun-gruplari/form'
     ],
+    cards: productCards,
+    documents: productDocuments,
+    reports: productReports,
     routes: [
       {
         path: '/urunVeHizmetler',

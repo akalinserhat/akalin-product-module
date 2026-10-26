@@ -18,6 +18,7 @@ export * from './adapters/ProductServiceContext';
 
 // Tipler ve DTO'lar
 export * from './types';
+export * from './definitions/entities';
 
 // Servisler
 export * from './services/UrunVeHizmetKartlariService';
