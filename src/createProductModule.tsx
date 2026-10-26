@@ -4,7 +4,7 @@ import { type IModuleDefinition } from '@akalin/module_core';
 import { ModuleSettingsRegistry } from '@akalin/ui';
 import { ProductServiceProvider, IProductServiceAdapter, defaultProductService } from './adapters/ProductServiceContext';
 import UrunHizmetModulAyarlariComponent from './components/UrunHizmetModulAyarlari';
-import { productCards, productDocuments, productReports } from './definitions/entities';
+import { productLists, productCards, productDocuments, productReports } from './definitions/entities';
 
 export interface CreateProductModuleOptions {
   id?: string;
@@ -50,6 +50,7 @@ export function createProductModule(options: CreateProductModuleOptions = {}): I
           'MOD_URUN',
           'MOD_STOK',
           'MOD_STOK_YONETIMI',
+          'urun_yonetimi',
           'urun-yonetimi',
           'UrunYonetimi',
           'urunVeHizmetler',
@@ -80,6 +81,19 @@ export function createProductModule(options: CreateProductModuleOptions = {}): I
   return {
     id,
     title,
+    aliases: [
+      'MOD_URUN_YONETIMI',
+      'MOD_URUN_HIZMET',
+      'MOD_URUN',
+      'MOD_STOK',
+      'MOD_STOK_YONETIMI',
+      'urun_yonetimi',
+      'urun-yonetimi',
+      'UrunYonetimi',
+      'urunVeHizmetler',
+      'urun-hizmet',
+      '@akalin/product_module'
+    ],
     permissionPrefix,
     icon: React.createElement(Box, { size: 20 }),
     iconName: 'Package',
@@ -93,8 +107,13 @@ export function createProductModule(options: CreateProductModuleOptions = {}): I
       '/popup/markalar/form',
       '/popup/birimler/form',
       '/popup/urun-ve-hizmetler/form',
-      '/popup/urun-gruplari/form'
+      '/popup/urun-gruplari/form',
+      '/urun-gruplari',
+      '/urun-gruplari/yeni',
+      '/urun-gruplari/:id',
+      '/urun-gruplari/duzenle/:id'
     ],
+    lists: productLists,
     cards: productCards,
     documents: productDocuments,
     reports: productReports,
