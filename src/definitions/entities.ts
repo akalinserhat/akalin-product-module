@@ -145,7 +145,7 @@ export const productLists: IModuleEntityDefinition[] = [
     isRegistered: true,
     children: [
       {
-        id: 'bsh-fiyat-farki',
+        id: 'bsh-fiyat-farki-kart',
         category: 'kart',
         parentId: 'bsh-fiyat-farki',
         titleKey: 'BSH Fiyat Farkı Detayı',
