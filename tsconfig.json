@@ -31,6 +31,8 @@
       "@akalin/ui/*": ["../webakus/node_modules/@akalin/ui/src/*"],
       "@akalin/module_core": ["../webakus/node_modules/@akalin/module_core/src/index.ts"],
       "@akalin/module_core/*": ["../webakus/node_modules/@akalin/module_core/src/*"],
+      "@akalin/file_manager_module": ["../akalin-file-manager-module/src/index.ts"],
+      "@akalin/file_manager_module/*": ["../akalin-file-manager-module/src/*"],
       "xlsx": ["../webakus/node_modules/xlsx"],
       "xlsx/*": ["../webakus/node_modules/xlsx/*"]
     }

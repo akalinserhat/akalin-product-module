@@ -23,6 +23,7 @@
   "author": "Akalin Software",
   "license": "UNLICENSED",
   "peerDependencies": {
+    "@akalin/file_manager_module": "*",
     "@akalin/module_core": "*",
     "@akalin/ui": "*",
     "react": ">=18.0.0",
