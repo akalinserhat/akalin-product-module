@@ -1,3 +1,8 @@
+/**
+ * Webakus ERP - Ürün ve Hizmet Modülü Servis Adaptörü ve Context Yapısı (ProductServiceContext.tsx)
+ * Modül içerisindeki tüm ürün, kategori, paket/set, fiyat listesi, kampanya ve belge ayarları
+ * servislerine merkezi erişim sağlayan React Context ve REST adaptörlerini yönetir.
+ */
 import React, { createContext, useContext, useMemo, ReactNode } from 'react';
 import axios, { type AxiosInstance } from 'axios';
 import { urunVeHizmetKartlariService } from '../services/UrunVeHizmetKartlariService';
@@ -40,7 +45,7 @@ export const defaultProductService: IProductServiceAdapter = {
   ozellikTanimlariService,
   ozellikTanimlariGruplariService,
   getBelgeAyarlari: async (belgeTuru: string) => {
-    const res = await axios.get(`/api/BelgeAyarlari/belge-turu/${belgeTuru}`);
+    const res = await axios.get(`/api/BelgeAyarlari/${belgeTuru}`);
     return res.data;
   }
 };
@@ -50,7 +55,7 @@ export const createRestProductAdapter = (customAxios?: AxiosInstance): IProductS
     ...defaultProductService,
     getBelgeAyarlari: async (belgeTuru: string) => {
       const client = customAxios || axios;
-      const res = await client.get(`/api/BelgeAyarlari/belge-turu/${belgeTuru}`);
+      const res = await client.get(`/api/BelgeAyarlari/${belgeTuru}`);
       return res.data;
     }
   };
