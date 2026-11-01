@@ -640,12 +640,19 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
         return undefined;
     }, [isIndirimActive, localKampanya.aksiyonDegeri, localKampanya.indirimTuru, t]);
 
+    const wizardHeaderTitle = localKampanya.adi?.trim()
+        ? localKampanya.adi.trim()
+        : t('auto_kampanya_detayi', 'Kampanya Kuralları ve Detaylar');
+
     return (
         <>
             <BaseWizardPage
                 id="kampanyaKuralWizard"
-                title={localKampanya.adi?.trim() ? localKampanya.adi : t('auto_kampanya_detayi', 'Kampanya Kuralları ve Detaylar')}
+                title={wizardHeaderTitle}
                 pageTitle={t('auto_kampanya_kurallari', 'Kampanya Kuralları')}
+                headerProps={{
+                    titleTooltip: wizardHeaderTitle
+                }}
                 subtitleLeft={t('auto_kampanya_kural_alt_baslik', 'Sepet koşulları, cari katılım sınırları, indirim ve bayi hakediş parametreleri.')}
                 subtitleRight={subtitleSummary}
                 icon={<Megaphone size={22} />}
