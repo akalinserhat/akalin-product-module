@@ -13,19 +13,19 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { 
-    BasitInput, 
-    BaseWizardPage, 
+import {
+    BasitInput,
+    BaseWizardPage,
     WizardStep,
-    BasePopup, 
+    BasePopup,
     Modal,
-    KampanyaRuleViewPanel, 
-    CurrencyInput, 
-    BaseSwitch, 
-    FieldError, 
-    FiyatFarkiSecici, 
-    BaseDropdownSecici, 
-    useAdminValidation 
+    KampanyaRuleViewPanel,
+    CurrencyInput,
+    BaseSwitch,
+    FieldError,
+    FiyatFarkiSecici,
+    BaseDropdownSecici,
+    useAdminValidation
 } from '@akalin/ui';
 import toast from 'react-hot-toast';
 import { validateKampanya } from '../validators/kampanyaValidation';
@@ -33,11 +33,11 @@ import { useMetadata } from '../context/MetadataContext';
 import { KampanyaDto, KampanyaGrupDto, KampanyaSecimItemDto } from '../dtos/KampanyalarDto';
 import { kampanyalarService } from '../services/KampanyalarService';
 import KampanyaKuralPopup from './KampanyaKuralPopup';
-import { 
-    Megaphone, 
-    Info, 
-    Plus, 
-    Percent, 
+import {
+    Megaphone,
+    Info,
+    Plus,
+    Percent,
     Banknote,
     Save,
     Layers,
@@ -55,10 +55,10 @@ interface KampanyaKuralWizardProps {
     hideActionMenu?: boolean;
 }
 
-const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({ 
-    onClose, 
-    kampanya, 
-    onSave, 
+const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
+    onClose,
+    kampanya,
+    onSave,
     isEditMode,
     asTabs,
     navigationMode,
@@ -108,8 +108,8 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
     const [isKuralPopupOpen, setIsKuralPopupOpen] = useState(false);
     const [editingRule, setEditingRule] = useState<any>(null);
     const [isIndirimActive, setIsIndirimActive] = useState<boolean>(
-        kampanya?.indirimTuru !== undefined 
-            ? !!kampanya?.indirimTuru 
+        kampanya?.indirimTuru !== undefined
+            ? !!kampanya?.indirimTuru
             : (kampanya?.aksiyonTipi ? (kampanya.aksiyonTipi === 1 || kampanya.aksiyonTipi === 2) : true)
     );
     const [isHakedisActive, setIsHakedisActive] = useState<boolean>(!!kampanya?.hakedisTuru);
@@ -293,7 +293,7 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
 
         if (kampanya && kampanya.kurallar && kampanya.kurallar.length > 0) {
             const rulesToFetch = kampanya.kurallar.filter((r: any) => r.kuralDegeri && (!r._selectedItems || r._selectedItems.length === 0));
-            
+
             if (rulesToFetch.length > 0) {
                 const token = localStorage.getItem('token') || sessionStorage.getItem('token');
                 const fetchPromises = rulesToFetch.map(async (r: any) => {
@@ -324,7 +324,7 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
                                         name: item.ad || item.Ad || item.tanim || item.Tanim || item.adi || item.Adi || `Kayıt #${item.id}`
                                     };
                                 }
-                            } catch {}
+                            } catch { }
                         }
                         return { id, name: `Kayıt #${id}` };
                     }));
@@ -335,9 +335,9 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
                 Promise.all(fetchPromises).then(updatedRules => {
                     setLocalKampanya(prev => {
                         const newRules = prev.kurallar?.map((prevRule: any) => {
-                            const updated = updatedRules.find(u => 
-                                (u._uid && prevRule._uid && u._uid === prevRule._uid) || 
-                                (u.id && prevRule.id && u.id === prevRule.id) || 
+                            const updated = updatedRules.find(u =>
+                                (u._uid && prevRule._uid && u._uid === prevRule._uid) ||
+                                (u.id && prevRule.id && u.id === prevRule.id) ||
                                 (u.kuralDegeri === prevRule.kuralDegeri && u.kuralAlani === prevRule.kuralAlani)
                             );
                             return updated || prevRule;
@@ -351,14 +351,14 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
 
     const handleSaveRule = useCallback((updatedRule: any) => {
         let currentRules = [...(localKampanya.kurallar || [])] as any[];
-        
+
         const existingIndex = currentRules.findIndex(r => r._uid === updatedRule._uid);
         if (existingIndex >= 0) {
             currentRules[existingIndex] = updatedRule;
         } else {
             currentRules.push(updatedRule);
         }
-        
+
         setLocalKampanya(prev => ({ ...prev, kurallar: currentRules }));
         clearError('kurallar');
         setIsKuralPopupOpen(false);
@@ -408,9 +408,9 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
         const zamanOption = zamanAraligiOptions.find((z: any) => z.id === periyotId.toString());
         const periyotLabel = zamanOption?.label?.toLowerCase() || (
             periyotId === 1 ? t('günde') :
-            periyotId === 2 ? t('haftada') :
-            periyotId === 3 ? t('ayda') :
-            periyotId === 4 ? t('yılda') : t('kampanya süresince')
+                periyotId === 2 ? t('haftada') :
+                    periyotId === 3 ? t('ayda') :
+                        periyotId === 4 ? t('yılda') : t('kampanya süresince')
         );
 
         if (sinirId === 3) {
@@ -584,9 +584,9 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
             const { _uid, _selectedItems, ...rest } = r;
             return rest;
         });
-        
-        const finalKampanya: Partial<KampanyaDto> = { 
-            ...localKampanya, 
+
+        const finalKampanya: Partial<KampanyaDto> = {
+            ...localKampanya,
             kodu: localKampanya.kodu || '',
             adi: localKampanya.adi || '',
             birlesmeKurali: localKampanya.birlesmeKurali || 1,
@@ -626,15 +626,15 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
         } else {
             finalKampanya.aksiyonTipi = undefined;
         }
-        
+
         onSave(finalKampanya);
         onClose();
     }, [validate, localKampanya, isIndirimActive, isHakedisActive, onSave, onClose, t]);
 
     const subtitleSummary = useMemo(() => {
         if (isIndirimActive && localKampanya.aksiyonDegeri) {
-            return localKampanya.indirimTuru === 1 
-                ? `%${localKampanya.aksiyonDegeri} ${t('İndirim')}` 
+            return localKampanya.indirimTuru === 1
+                ? `%${localKampanya.aksiyonDegeri} ${t('İndirim')}`
                 : `${Number(localKampanya.aksiyonDegeri).toLocaleString('tr-TR', { minimumFractionDigits: 2 })} ₺ ${t('İndirim')}`;
         }
         return undefined;
@@ -678,8 +678,8 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
                 asTabs={isTabMode}
             >
                 {/* 1. ADIM: Genel Kampanya Bilgileri */}
-                <WizardStep 
-                    id="genel-bilgiler" 
+                <WizardStep
+                    id="genel-bilgiler"
                     title={t('auto_genel_bilgiler', 'Genel Bilgiler')}
                     onValidate={validateStep1}
                 >
@@ -788,8 +788,8 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
                 </WizardStep>
 
                 {/* 2. ADIM: Birleşim & Öncelik Matrisi */}
-                <WizardStep 
-                    id="birlesim-kurallari" 
+                <WizardStep
+                    id="birlesim-kurallari"
                     title={t('auto_birlesim_ve_oncelik', 'Birleşim & Öncelik')}
                     onValidate={validateStepBirlesim}
                 >
@@ -982,8 +982,8 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
                 </WizardStep>
 
                 {/* 3. ADIM: Cari Katılım Koşulları */}
-                <WizardStep 
-                    id="katilim-kosullari" 
+                <WizardStep
+                    id="katilim-kosullari"
                     title={t('Cari Katılım Koşulları')}
                     onValidate={validateStep2}
                 >
@@ -1100,8 +1100,8 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
                 </WizardStep>
 
                 {/* 3. ADIM: Sepet ve Ürün Kuralları */}
-                <WizardStep 
-                    id="sepet-kurallari" 
+                <WizardStep
+                    id="sepet-kurallari"
                     title={t('Sepet ve Ürün Kuralları')}
                     onValidate={validateStep3}
                 >
@@ -1116,8 +1116,8 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
                                         {(localKampanya.kurallar || []).length} {t('Kural')}
                                     </span>
                                 )}
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     className="btn btn-secondary btn-sm flex items-center gap-6"
                                     onClick={() => { setEditingRule(null); setIsKuralPopupOpen(true); }}
                                 >
@@ -1128,7 +1128,7 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
                         </div>
 
                         <FieldError error={errors.kurallar} />
-                        <KampanyaRuleViewPanel 
+                        <KampanyaRuleViewPanel
                             rules={localKampanya.kurallar || []}
                             onEdit={(rule) => { setEditingRule(rule); setIsKuralPopupOpen(true); }}
                             onDelete={(ruleUid) => deleteRule(ruleUid)}
@@ -1143,8 +1143,8 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
                 </WizardStep>
 
                 {/* 4. ADIM: Kampanya Avantajları & Aksiyonlar */}
-                <WizardStep 
-                    id="avantajlar-aksiyonlar" 
+                <WizardStep
+                    id="avantajlar-aksiyonlar"
                     title={t('auto_kampanya_avantajlari', 'Kampanya Avantajları & Aksiyonlar')}
                     onValidate={validateStep4}
                 >
@@ -1165,7 +1165,7 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
                                         <div className="text-secondary text-12">{t('auto_musteri_indirimi_aciklama', 'Sepette veya kalem bazında müşteriye yansıtılacak indirim.')}</div>
                                     </div>
                                 </div>
-                                <BaseSwitch 
+                                <BaseSwitch
                                     label={t('İndirim Uygula')}
                                     checked={isIndirimActive}
                                     onChange={(e) => {
@@ -1192,8 +1192,8 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
                                             value={localKampanya.indirimTuru?.toString() || '2'}
                                             onChange={(id: string) => {
                                                 const val = parseInt(id);
-                                                setLocalKampanya({ 
-                                                    ...localKampanya, 
+                                                setLocalKampanya({
+                                                    ...localKampanya,
                                                     indirimTuru: val,
                                                     kdvDahilMi: val === 2 ? (localKampanya.kdvDahilMi ?? false) : false
                                                 });
@@ -1216,7 +1216,7 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
                                         <div className="flex items-center gap-12">
                                             <div className="flex-1">
                                                 {localKampanya.indirimTuru === 1 ? (
-                                                    <input 
+                                                    <input
                                                         type="number"
                                                         className={`form-input w-full ${errors.aksiyonDegeri ? 'is-invalid' : ''}`}
                                                         value={localKampanya.aksiyonDegeri || ''}
@@ -1229,7 +1229,7 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
                                                         max="100"
                                                     />
                                                 ) : (
-                                                    <CurrencyInput 
+                                                    <CurrencyInput
                                                         value={localKampanya.aksiyonDegeri || 0}
                                                         onChange={(e) => {
                                                             setLocalKampanya({ ...localKampanya, aksiyonDegeri: e.target.value });
@@ -1242,7 +1242,7 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
                                             </div>
                                             {localKampanya.indirimTuru === 2 && (
                                                 <div className="flex-shrink-0">
-                                                    <BaseSwitch 
+                                                    <BaseSwitch
                                                         label={t('KDV Dahil')}
                                                         checked={localKampanya.kdvDahilMi || false}
                                                         onChange={(e) => {
@@ -1268,7 +1268,7 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
                                         <div className="text-secondary text-12">{t('auto_bayi_hakedisi_aciklama', 'Üretici veya ana dağıtıcının karşıladığı kampanya teşviki.')}</div>
                                     </div>
                                 </div>
-                                <BaseSwitch 
+                                <BaseSwitch
                                     label={t('Hakediş Uygula')}
                                     checked={isHakedisActive}
                                     onChange={(e) => {
@@ -1298,8 +1298,8 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
                                             value={localKampanya.hakedisTuru?.toString() || '1'}
                                             onChange={(id: string) => {
                                                 const val = parseInt(id);
-                                                setLocalKampanya({ 
-                                                    ...localKampanya, 
+                                                setLocalKampanya({
+                                                    ...localKampanya,
                                                     hakedisTuru: val,
                                                     firmaHakEdisKdvDahilMi: val === 2 ? (localKampanya.firmaHakEdisKdvDahilMi ?? false) : false
                                                 });
@@ -1318,16 +1318,16 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
 
                                     <div>
                                         <label className="form-field-label">
-                                            {localKampanya.hakedisTuru === 1 
-                                                ? t('Hakediş Oranı') 
-                                                : localKampanya.hakedisTuru === 2 
-                                                ? t('Hakediş Tutarı') 
-                                                : t('Fiyat Farkı Belgesi')}
+                                            {localKampanya.hakedisTuru === 1
+                                                ? t('Hakediş Oranı')
+                                                : localKampanya.hakedisTuru === 2
+                                                    ? t('Hakediş Tutarı')
+                                                    : t('Fiyat Farkı Belgesi')}
                                         </label>
                                         <div className="flex items-center gap-12">
                                             <div className="flex-1">
                                                 {localKampanya.hakedisTuru === 3 ? (
-                                                    <FiyatFarkiSecici 
+                                                    <FiyatFarkiSecici
                                                         value={localKampanya.fiyatFarkiBelgesiId}
                                                         onChange={(belgeId) => {
                                                             setLocalKampanya({ ...localKampanya, fiyatFarkiBelgesiId: belgeId });
@@ -1337,7 +1337,7 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
                                                     />
                                                 ) : (
                                                     localKampanya.hakedisTuru === 1 ? (
-                                                        <input 
+                                                        <input
                                                             type="number"
                                                             className={`form-input w-full ${errors.firmaHakEdisTutari ? 'is-invalid' : ''}`}
                                                             value={localKampanya.firmaHakEdisTutari || ''}
@@ -1350,7 +1350,7 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
                                                             max="100"
                                                         />
                                                     ) : (
-                                                        <CurrencyInput 
+                                                        <CurrencyInput
                                                             value={localKampanya.firmaHakEdisTutari || 0}
                                                             onChange={(e) => {
                                                                 setLocalKampanya({ ...localKampanya, firmaHakEdisTutari: e.target.value });
@@ -1364,7 +1364,7 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
                                             </div>
                                             {localKampanya.hakedisTuru === 2 && (
                                                 <div className="flex-shrink-0">
-                                                    <BaseSwitch 
+                                                    <BaseSwitch
                                                         label={t('KDV Dahil')}
                                                         checked={localKampanya.firmaHakEdisKdvDahilMi || false}
                                                         onChange={(e) => {
