@@ -78,6 +78,21 @@ export function createProductModule(options: CreateProductModuleOptions = {}): I
     );
   };
 
+  const ConnectedUrunVeHizmetlerPage = withProvider(UrunVeHizmetlerPage);
+  const ConnectedUrunVeHizmetFormPage = withProvider(UrunVeHizmetFormPage);
+  const ConnectedPaketVeSetlerPage = withProvider(PaketVeSetlerPage);
+  const ConnectedPaketVeSetFormPage = withProvider(PaketVeSetFormPage);
+  const ConnectedUrunGrupFormPage = withProvider(UrunGrupFormPage);
+  const ConnectedKampanyalarPage = withProvider(KampanyalarPage);
+  const ConnectedKampanyaFormPage = withProvider(KampanyaFormPage);
+  const ConnectedFiyatListeleriPage = withProvider(FiyatListeleriPage);
+  const ConnectedFiyatListesiPage = withProvider(FiyatListesiPage);
+  const ConnectedBshFiyatFarkiListPage = withProvider(BshFiyatFarkiListPage);
+  const ConnectedBshFiyatFarkiFormPage = withProvider(BshFiyatFarkiFormPage);
+  const ConnectedMarkaFormPopup = withProvider(MarkaFormPopup);
+  const ConnectedBirimFormPopup = withProvider(BirimFormPopup);
+  const ConnectedOzellikTanimFormPopup = withProvider(OzellikTanimFormPopup);
+
   return {
     id,
     title,
@@ -120,235 +135,235 @@ export function createProductModule(options: CreateProductModuleOptions = {}): I
     routes: [
       {
         path: '/urunVeHizmetler',
-        element: React.createElement(withProvider(UrunVeHizmetlerPage)),
+        element: React.createElement(ConnectedUrunVeHizmetlerPage),
         title: 'Ürün ve Hizmetler',
         requiredPermissions: ['urun.kart.urun.goruntule']
       },
       {
         path: '/urunVeHizmetler/yeni',
-        element: React.createElement(withProvider(UrunVeHizmetFormPage)),
+        element: React.createElement(ConnectedUrunVeHizmetFormPage),
         title: 'Yeni Ürün/Hizmet',
         requiredPermissions: ['urun.kart.urun.olustur']
       },
       {
         path: '/urunVeHizmetler/:id',
-        element: React.createElement(withProvider(UrunVeHizmetFormPage)),
+        element: React.createElement(ConnectedUrunVeHizmetFormPage),
         title: 'Ürün/Hizmet Düzenle',
         requiredPermissions: ['urun.kart.urun.duzenle']
       },
       {
         path: '/paket-ve-setler',
-        element: React.createElement(withProvider(PaketVeSetlerPage)),
+        element: React.createElement(ConnectedPaketVeSetlerPage),
         title: 'Paket & Set Tanımları',
         requiredPermissions: ['urun.kart.paket-set.goruntule']
       },
       {
         path: '/paket-ve-setler/yeni',
-        element: React.createElement(withProvider(PaketVeSetFormPage)),
+        element: React.createElement(ConnectedPaketVeSetFormPage),
         title: 'Yeni Paket / Set',
         requiredPermissions: ['urun.kart.paket-set.olustur']
       },
       {
         path: '/paket-ve-setler/:id',
-        element: React.createElement(withProvider(PaketVeSetFormPage)),
+        element: React.createElement(ConnectedPaketVeSetFormPage),
         title: 'Paket / Set Düzenle',
         requiredPermissions: ['urun.kart.paket-set.duzenle']
       },
       {
         path: '/urun-gruplari/yeni',
-        element: React.createElement(withProvider(UrunGrupFormPage)),
+        element: React.createElement(ConnectedUrunGrupFormPage),
         title: 'Yeni Ürün Grubu',
         requiredPermissions: ['urun.kart.kategori.olustur']
       },
       {
         path: '/urun-gruplari/duzenle/:id',
-        element: React.createElement(withProvider(UrunGrupFormPage)),
+        element: React.createElement(ConnectedUrunGrupFormPage),
         title: 'Ürün Grubu Düzenle',
         requiredPermissions: ['urun.kart.kategori.duzenle']
       },
       {
         path: '/urun-gruplari/:id',
-        element: React.createElement(withProvider(UrunGrupFormPage)),
+        element: React.createElement(ConnectedUrunGrupFormPage),
         title: 'Ürün Grubu',
         requiredPermissions: ['urun.kart.kategori.goruntule']
       },
       {
         path: '/kampanyalar',
-        element: React.createElement(withProvider(KampanyalarPage)),
+        element: React.createElement(ConnectedKampanyalarPage),
         title: 'Kampanyalar',
         requiredPermissions: ['urun.kart.urun.goruntule']
       },
       {
         path: '/kampanyalar/yeni',
-        element: React.createElement(withProvider(KampanyaFormPage)),
+        element: React.createElement(ConnectedKampanyaFormPage),
         title: 'Yeni Kampanya',
         requiredPermissions: ['urun.kart.urun.olustur']
       },
       {
         path: '/kampanyalar/yeni/excel-import',
-        element: React.createElement(withProvider(KampanyaFormPage)),
+        element: React.createElement(ConnectedKampanyaFormPage),
         title: "Excel'den Veri Al",
         requiredPermissions: ['urun.kart.urun.olustur']
       },
       {
         path: '/kampanyalar/yeni/kural/yeni',
-        element: React.createElement(withProvider(KampanyaFormPage)),
+        element: React.createElement(ConnectedKampanyaFormPage),
         title: 'Yeni Kampanya Kuralı',
         requiredPermissions: ['urun.kart.urun.olustur']
       },
       {
         path: '/kampanyalar/yeni/kural/:kuralIndex',
-        element: React.createElement(withProvider(KampanyaFormPage)),
+        element: React.createElement(ConnectedKampanyaFormPage),
         title: 'Kampanya Kuralı Düzenle',
         requiredPermissions: ['urun.kart.urun.olustur']
       },
       {
         path: '/kampanyalar/yeni/kural',
-        element: React.createElement(withProvider(KampanyaFormPage)),
+        element: React.createElement(ConnectedKampanyaFormPage),
         title: 'Yeni Kampanya Kuralı',
         requiredPermissions: ['urun.kart.urun.olustur']
       },
       {
         path: '/kampanyalar/duzenle/:id',
-        element: React.createElement(withProvider(KampanyaFormPage)),
+        element: React.createElement(ConnectedKampanyaFormPage),
         title: 'Kampanya Düzenle',
         requiredPermissions: ['urun.kart.urun.duzenle']
       },
       {
         path: '/kampanyalar/duzenle/:id/excel-import',
-        element: React.createElement(withProvider(KampanyaFormPage)),
+        element: React.createElement(ConnectedKampanyaFormPage),
         title: "Excel'den Veri Al",
         requiredPermissions: ['urun.kart.urun.duzenle']
       },
       {
         path: '/kampanyalar/duzenle/:id/kural/yeni',
-        element: React.createElement(withProvider(KampanyaFormPage)),
+        element: React.createElement(ConnectedKampanyaFormPage),
         title: 'Yeni Kampanya Kuralı',
         requiredPermissions: ['urun.kart.urun.duzenle']
       },
       {
         path: '/kampanyalar/duzenle/:id/kural/:kuralIndex',
-        element: React.createElement(withProvider(KampanyaFormPage)),
+        element: React.createElement(ConnectedKampanyaFormPage),
         title: 'Kampanya Kuralı Düzenle',
         requiredPermissions: ['urun.kart.urun.duzenle']
       },
       {
         path: '/kampanyalar/duzenle/:id/kural',
-        element: React.createElement(withProvider(KampanyaFormPage)),
+        element: React.createElement(ConnectedKampanyaFormPage),
         title: 'Yeni Kampanya Kuralı',
         requiredPermissions: ['urun.kart.urun.duzenle']
       },
       {
         path: '/kampanyalar/:id',
-        element: React.createElement(withProvider(KampanyaFormPage)),
+        element: React.createElement(ConnectedKampanyaFormPage),
         title: 'Kampanya Belgesi',
         requiredPermissions: ['urun.kart.urun.duzenle']
       },
       {
         path: '/kampanyalar/:id/excel-import',
-        element: React.createElement(withProvider(KampanyaFormPage)),
+        element: React.createElement(ConnectedKampanyaFormPage),
         title: "Excel'den Veri Al",
         requiredPermissions: ['urun.kart.urun.duzenle']
       },
       {
         path: '/kampanyalar/:id/kural/yeni',
-        element: React.createElement(withProvider(KampanyaFormPage)),
+        element: React.createElement(ConnectedKampanyaFormPage),
         title: 'Yeni Kampanya Kuralı',
         requiredPermissions: ['urun.kart.urun.duzenle']
       },
       {
         path: '/kampanyalar/:id/kural/:kuralIndex',
-        element: React.createElement(withProvider(KampanyaFormPage)),
+        element: React.createElement(ConnectedKampanyaFormPage),
         title: 'Kampanya Kuralı Düzenle',
         requiredPermissions: ['urun.kart.urun.duzenle']
       },
       {
         path: '/kampanyalar/:id/kural',
-        element: React.createElement(withProvider(KampanyaFormPage)),
+        element: React.createElement(ConnectedKampanyaFormPage),
         title: 'Yeni Kampanya Kuralı',
         requiredPermissions: ['urun.kart.urun.duzenle']
       },
       {
         path: '/fiyat-listeleri',
-        element: React.createElement(withProvider(FiyatListeleriPage)),
+        element: React.createElement(ConnectedFiyatListeleriPage),
         title: 'Fiyat Listeleri',
         requiredPermissions: ['urun.kart.fiyat-listesi.goruntule']
       },
       {
         path: '/fiyat-listeleri/yeni',
-        element: React.createElement(withProvider(FiyatListesiPage)),
+        element: React.createElement(ConnectedFiyatListesiPage),
         title: 'Yeni Fiyat Listesi',
         requiredPermissions: ['urun.kart.fiyat-listesi.olustur']
       },
       {
         path: '/fiyat-listeleri/yeni/bulut-dosyalari',
-        element: React.createElement(withProvider(FiyatListesiPage)),
+        element: React.createElement(ConnectedFiyatListesiPage),
         title: 'Bulut Dosyaları',
         requiredPermissions: ['urun.kart.fiyat-listesi.olustur']
       },
       {
         path: '/fiyat-listeleri/yeni/excel-import',
-        element: React.createElement(withProvider(FiyatListesiPage)),
+        element: React.createElement(ConnectedFiyatListesiPage),
         title: "Excel'den Veri Al",
         requiredPermissions: ['urun.kart.fiyat-listesi.olustur']
       },
       {
         path: '/fiyat-listeleri/yeni/cari-secim',
-        element: React.createElement(withProvider(FiyatListesiPage)),
+        element: React.createElement(ConnectedFiyatListesiPage),
         title: 'Cari Seçimi',
         requiredPermissions: ['urun.kart.fiyat-listesi.olustur']
       },
       {
         path: '/fiyat-listeleri/:id',
-        element: React.createElement(withProvider(FiyatListesiPage)),
+        element: React.createElement(ConnectedFiyatListesiPage),
         title: 'Fiyat Listesi Düzenle',
         requiredPermissions: ['urun.kart.fiyat-listesi.duzenle']
       },
       {
         path: '/fiyat-listeleri/:id/bulut-dosyalari',
-        element: React.createElement(withProvider(FiyatListesiPage)),
+        element: React.createElement(ConnectedFiyatListesiPage),
         title: 'Bulut Dosyaları',
         requiredPermissions: ['urun.kart.fiyat-listesi.duzenle']
       },
       {
         path: '/fiyat-listeleri/:id/excel-import',
-        element: React.createElement(withProvider(FiyatListesiPage)),
+        element: React.createElement(ConnectedFiyatListesiPage),
         title: "Excel'den Veri Al",
         requiredPermissions: ['urun.kart.fiyat-listesi.duzenle']
       },
       {
         path: '/fiyat-listeleri/:id/cari-secim',
-        element: React.createElement(withProvider(FiyatListesiPage)),
+        element: React.createElement(ConnectedFiyatListesiPage),
         title: 'Cari Seçimi',
         requiredPermissions: ['urun.kart.fiyat-listesi.duzenle']
       },
       {
         path: '/bsh-fiyat-farki',
-        element: React.createElement(withProvider(BshFiyatFarkiListPage)),
+        element: React.createElement(ConnectedBshFiyatFarkiListPage),
         title: 'BSH Fiyat Farkı Listesi',
         requiredPermissions: ['urun.kart.fiyat-listesi.goruntule']
       },
       {
         path: '/bsh-fiyat-farki/yeni',
-        element: React.createElement(withProvider(BshFiyatFarkiFormPage)),
+        element: React.createElement(ConnectedBshFiyatFarkiFormPage),
         title: 'Yeni BSH Fiyat Farkı',
         requiredPermissions: ['urun.kart.fiyat-listesi.olustur']
       },
       {
         path: '/bsh-fiyat-farki/yeni/excel-import',
-        element: React.createElement(withProvider(BshFiyatFarkiFormPage)),
+        element: React.createElement(ConnectedBshFiyatFarkiFormPage),
         title: "Excel'den Veri Al",
         requiredPermissions: ['urun.kart.fiyat-listesi.olustur']
       },
       {
         path: '/bsh-fiyat-farki/duzenle/:id',
-        element: React.createElement(withProvider(BshFiyatFarkiFormPage)),
+        element: React.createElement(ConnectedBshFiyatFarkiFormPage),
         title: 'BSH Fiyat Farkı Düzenle',
         requiredPermissions: ['urun.kart.fiyat-listesi.duzenle']
       },
       {
         path: '/bsh-fiyat-farki/duzenle/:id/excel-import',
-        element: React.createElement(withProvider(BshFiyatFarkiFormPage)),
+        element: React.createElement(ConnectedBshFiyatFarkiFormPage),
         title: "Excel'den Veri Al",
         requiredPermissions: ['urun.kart.fiyat-listesi.duzenle']
       }
@@ -356,31 +371,31 @@ export function createProductModule(options: CreateProductModuleOptions = {}): I
     popupRoutes: [
       {
         path: 'markalar/form',
-        element: React.createElement(withProvider(MarkaFormPopup)),
+        element: React.createElement(ConnectedMarkaFormPopup),
         title: 'Marka Tanımı',
         isPopup: true
       },
       {
         path: 'birimler/form',
-        element: React.createElement(withProvider(BirimFormPopup)),
+        element: React.createElement(ConnectedBirimFormPopup),
         title: 'Birim Tanımı',
         isPopup: true
       },
       {
         path: 'urun-ve-hizmetler/form',
-        element: React.createElement(withProvider(UrunVeHizmetFormPage)),
+        element: React.createElement(ConnectedUrunVeHizmetFormPage),
         title: 'Ürün ve Hizmet Tanımı',
         isPopup: true
       },
       {
         path: 'ozellik-tanimlari/form',
-        element: React.createElement(withProvider(OzellikTanimFormPopup)),
+        element: React.createElement(ConnectedOzellikTanimFormPopup),
         title: 'Özellik Tanımı',
         isPopup: true
       },
       {
         path: 'urun-gruplari/form',
-        element: React.createElement(withProvider(UrunGrupFormPage)),
+        element: React.createElement(ConnectedUrunGrupFormPage),
         title: 'Ürün Grubu Tanımı',
         isPopup: true
       }

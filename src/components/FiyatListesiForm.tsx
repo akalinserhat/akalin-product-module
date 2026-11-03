@@ -81,6 +81,8 @@ const FiyatListesiForm: React.FC<FiyatListesiFormProps> = ({ onDocumentLoaded })
         formDataRef.current = formData;
     }, [formData]);
 
+    const appliedLocationFormDataRef = useRef<any>(location.state?.currentFormData);
+
     const isInitialMount = useRef(true);
 
     useEffect(() => {
@@ -106,10 +108,12 @@ const FiyatListesiForm: React.FC<FiyatListesiFormProps> = ({ onDocumentLoaded })
     const handleOpenExcelImport = useCallback(() => {
         const cleanPath = location.pathname.replace(/\/+$/, '').replace(/\/(bulut-dosyalari|excel-import)$/, '');
         if (!isExcelImportRoute) {
+            const currentSnapshot = formDataRef.current || formData || location.state?.currentFormData;
+            appliedLocationFormDataRef.current = currentSnapshot;
             navigate(`${cleanPath}/excel-import`, {
                 state: {
                     ...location.state,
-                    currentFormData: formDataRef.current || formData || location.state?.currentFormData
+                    currentFormData: currentSnapshot
                 }
             });
         }
@@ -120,11 +124,13 @@ const FiyatListesiForm: React.FC<FiyatListesiFormProps> = ({ onDocumentLoaded })
         setIsExcelImportOpen(false);
         if (location.pathname.endsWith('/excel-import')) {
             const parentPath = location.pathname.replace(/\/excel-import$/, '');
+            const currentSnapshot = formDataRef.current || formData || location.state?.currentFormData;
+            appliedLocationFormDataRef.current = currentSnapshot;
             navigate(parentPath, {
                 replace: true,
                 state: {
                     ...location.state,
-                    currentFormData: formDataRef.current || formData || location.state?.currentFormData
+                    currentFormData: currentSnapshot
                 }
             });
         }
@@ -380,14 +386,15 @@ const FiyatListesiForm: React.FC<FiyatListesiFormProps> = ({ onDocumentLoaded })
     };
 
     useEffect(() => {
-        if (location.state?.currentFormData) {
+        if (location.state?.currentFormData && location.state.currentFormData !== appliedLocationFormDataRef.current) {
+            appliedLocationFormDataRef.current = location.state.currentFormData;
             setFormData(location.state.currentFormData);
             formDataRef.current = location.state.currentFormData;
             if (onDocumentLoaded) {
                 onDocumentLoaded(location.state.currentFormData);
             }
         }
-    }, [location.state?.currentFormData, onDocumentLoaded]);
+    }, [location.state?.currentFormData]);
 
     useEffect(() => {
         if (isEditMode) {
@@ -529,9 +536,11 @@ const FiyatListesiForm: React.FC<FiyatListesiFormProps> = ({ onDocumentLoaded })
         }, 60);
     }, []);
 
+    const isSubRouteActive = location.pathname.endsWith('/cari-secim') || showExcelImport || location.pathname.endsWith('/bulut-dosyalari');
+
     useDocumentRowSearch({
-        rows: formData.kalemler || [],
-        searchCriteria: [
+        rows: isSubRouteActive ? [] : (formData.kalemler || []),
+        searchCriteria: isSubRouteActive ? [] : [
             { id: 'Tumu', label: t('Genel', 'Genel'), iconName: 'Search', type: 'text', placeholder: t('auto_fiyat_listesi_ara', 'Fiyat listesi satırlarında ara...') },
             { id: 'tedarikciUrunKodu', label: t('auto_tedarikci_urun_kodu', 'Ürün Kodu'), iconName: 'Tag', type: 'text', placeholder: t('auto_urun_kodu_ara', 'Ürün kodu ile ara...') },
             { id: 'urunVeHizmetAdi', label: t('auto_urun_hizmet', 'Ürün / Hizmet'), iconName: 'FileText', type: 'text', placeholder: t('auto_urun_adi_ara', 'Ürün adı ile ara...') },
@@ -731,12 +740,22 @@ const FiyatListesiForm: React.FC<FiyatListesiFormProps> = ({ onDocumentLoaded })
                                     cariUnvani: val,
                                     cariId: null 
                                 }));
+                                formDataRef.current = {
+                                    ...formDataRef.current,
+                                    cariUnvani: val,
+                                    cariId: null
+                                };
                                 setCariAramaMetni(val);
                             }}
                             hasSelection={Boolean(formData.cariId)}
                             error={Boolean(errors.cariId)}
                             onClear={() => {
                                 setFormData((prev: any) => ({ ...prev, cariId: null, cariUnvani: '' }));
+                                formDataRef.current = {
+                                    ...formDataRef.current,
+                                    cariId: null,
+                                    cariUnvani: ''
+                                };
                                 setCariAramaMetni('');
                             }}
                             onSelect={(cari: any) => {
@@ -750,6 +769,11 @@ const FiyatListesiForm: React.FC<FiyatListesiFormProps> = ({ onDocumentLoaded })
                                     cariId: cariId, 
                                     cariUnvani: cariUnvan 
                                 }));
+                                formDataRef.current = {
+                                    ...formDataRef.current,
+                                    cariId: cariId,
+                                    cariUnvani: cariUnvan
+                                };
                                 setCariAramaMetni(cariUnvan);
                                 setErrors((prev: any) => {
                                     if (!prev.cariId) return prev;

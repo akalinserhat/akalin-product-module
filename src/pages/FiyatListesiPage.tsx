@@ -30,13 +30,15 @@ const FiyatListesiPage: React.FC = () => {
 
     useDocumentLayout(title, () => (isCloudRoute || isExcelImportRoute || isCariSecimRoute) ? navigate(parentPath) : navigate('/fiyat-listeleri'));
 
+    const handleDocumentLoaded = React.useCallback((data: any) => {
+        if (data?.belgeNo) {
+            setBelgeNo(data.belgeNo);
+        }
+    }, []);
+
     return (
         <div className="flex-1 flex flex-col min-h-0">
-            <FiyatListesiForm onDocumentLoaded={(data) => {
-                if (data?.belgeNo) {
-                    setBelgeNo(data.belgeNo);
-                }
-            }} />
+            <FiyatListesiForm onDocumentLoaded={handleDocumentLoaded} />
         </div>
     );
 };
