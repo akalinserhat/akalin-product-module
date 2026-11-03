@@ -47,6 +47,8 @@ export * from './validators/urunGrupValidation';
 export * from './defaults/urunVeHizmetDefaultValue';
 export * from './defaults/paketVeSetDefaultValue';
 export * from './defaults/kampanyaDefaultValue';
+export * from './defaults/fiyatListesiDefaultValue';
+export * from './defaults/fiyatListesiTanimDefaultValue';
 
 // Yardımcı Araçlar (Utils) & Context
 export * from './utils/stokUtils';

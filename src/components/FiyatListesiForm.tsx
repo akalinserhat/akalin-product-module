@@ -33,6 +33,7 @@ import ExcelImportPage, { type ExcelColumnDef } from './ExcelImportPage';
 import { Save, FileText, AlignLeft, FileSpreadsheet } from 'lucide-react';
 import { useExcelProductImport } from '../hooks/useExcelProductImport';
 import { useFiyatListesiActionMenu } from '../hooks/useFiyatListesiActionMenu';
+import { getFiyatListesiDefaultValues } from '../defaults/fiyatListesiDefaultValue';
 import { 
     validateFiyatListesiForm, 
     isKalemFieldInvalid, 
@@ -72,18 +73,7 @@ const FiyatListesiForm: React.FC<FiyatListesiFormProps> = ({ onDocumentLoaded })
                 }
             } catch (e) {}
         }
-        return {
-            belgeGuid: typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substring(2),
-            belgeNo: isEditMode ? '' : '[OTOMATİK]',
-            baslangicTarihi: new Date().toISOString().substring(0, 10),
-            bitisTarihi: '',
-            cariId: null,
-            cariUnvani: '',
-            fiyatListesiTanimiId: null,
-            aciklama: '',
-            kampanyaMi: false,
-            kalemler: isEditMode ? [] : [{ id: Date.now(), urunVeHizmetKartiId: null, tedarikciUrunKodu: '', fiyat: 0, valorTarihi: '' }]
-        };
+        return getFiyatListesiDefaultValues({ isEditMode });
     });
 
     const formDataRef = useRef(formData);
@@ -140,10 +130,13 @@ const FiyatListesiForm: React.FC<FiyatListesiFormProps> = ({ onDocumentLoaded })
         }
     }, [location.pathname, location.state, formData, navigate]);
 
+    const isExcelDefault = !isEditMode && !formData.isExcelImported;
+
     const fiyatListesiActionMenu = useFiyatListesiActionMenu({
         onExcelImportClick: handleOpenExcelImport,
         kampanyaMi: formData.kampanyaMi,
-        onKampanyaChange: (val) => setFormData((prev: any) => ({ ...prev, kampanyaMi: val }))
+        onKampanyaChange: (val) => setFormData((prev: any) => ({ ...prev, kampanyaMi: val })),
+        isExcelDefault
     });
 
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -606,7 +599,8 @@ const FiyatListesiForm: React.FC<FiyatListesiFormProps> = ({ onDocumentLoaded })
         if (newKalemler && newKalemler.length > 0) {
             const updated = {
                 ...formDataRef.current,
-                kalemler: newKalemler
+                kalemler: newKalemler,
+                isExcelImported: true
             };
             formDataRef.current = updated;
             setFormData(updated);
@@ -691,6 +685,7 @@ const FiyatListesiForm: React.FC<FiyatListesiFormProps> = ({ onDocumentLoaded })
                             bitisTarihi={formData.bitisTarihi}
                             onChange={(baslangic, bitis) => {
                                 setFormData((prev: any) => ({ ...prev, baslangicTarihi: baslangic, bitisTarihi: bitis }));
+                                formDataRef.current = { ...formDataRef.current, baslangicTarihi: baslangic, bitisTarihi: bitis };
                                 setErrors((prev: any) => {
                                     if (!prev.baslangicTarihi && !prev.bitisTarihi) return prev;
                                     const next = { ...prev };

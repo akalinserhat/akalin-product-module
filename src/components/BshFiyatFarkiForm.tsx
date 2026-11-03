@@ -473,6 +473,7 @@ const BshFiyatFarkiForm: React.FC = () => {
                             bitisTarihi={formData.bitisTarihi}
                             onChange={(baslangic, bitis) => {
                                 setFormData({ ...formData, baslangicTarihi: baslangic, bitisTarihi: bitis });
+                                formDataRef.current = { ...formDataRef.current, baslangicTarihi: baslangic, bitisTarihi: bitis };
                                 if (errors.baslangicTarihi) {
                                     setErrors(prev => {
                                         const next = { ...prev };
