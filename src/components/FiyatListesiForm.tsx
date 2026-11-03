@@ -386,15 +386,37 @@ const FiyatListesiForm: React.FC<FiyatListesiFormProps> = ({ onDocumentLoaded })
     };
 
     useEffect(() => {
-        if (location.state?.currentFormData && location.state.currentFormData !== appliedLocationFormDataRef.current) {
-            appliedLocationFormDataRef.current = location.state.currentFormData;
-            setFormData(location.state.currentFormData);
-            formDataRef.current = location.state.currentFormData;
-            if (onDocumentLoaded) {
-                onDocumentLoaded(location.state.currentFormData);
-            }
+        const selectedCari = location.state?.selectedCari;
+        if (selectedCari && (selectedCari.id !== undefined || selectedCari.Id !== undefined)) {
+            const cariId = selectedCari.id ?? selectedCari.Id;
+            const cariUnvan = selectedCari.unvan
+                || selectedCari.Unvan
+                || `${selectedCari.ad || selectedCari.Ad || ''} ${selectedCari.soyad || selectedCari.Soyad || ''}`.trim()
+                || selectedCari.kod
+                || selectedCari.Kod
+                || '';
+            setFormData((prev: any) => {
+                if (prev.cariId === cariId && prev.cariUnvani === cariUnvan) return prev;
+                return {
+                    ...prev,
+                    cariId,
+                    cariUnvani: cariUnvan
+                };
+            });
+            formDataRef.current = {
+                ...formDataRef.current,
+                cariId,
+                cariUnvani: cariUnvan
+            };
+            setCariAramaMetni(cariUnvan);
+            setErrors((prev: any) => {
+                if (!prev.cariId) return prev;
+                const next = { ...prev };
+                delete next.cariId;
+                return next;
+            });
         }
-    }, [location.state?.currentFormData]);
+    }, [location.state?.selectedCari]);
 
     useEffect(() => {
         if (isEditMode) {
@@ -729,6 +751,7 @@ const FiyatListesiForm: React.FC<FiyatListesiFormProps> = ({ onDocumentLoaded })
                     <DocumentHeaderField name="cariId" label={t('Cari Seçimi')} required>
                         <CariSeciciInput
                             id="cariId"
+                            cariId={formData.cariId}
                             value={formData.cariUnvani || ''}
                             onChange={(e: any, rawVal?: any, selectedCari?: any) => {
                                 if (selectedCari) return;
@@ -760,9 +783,12 @@ const FiyatListesiForm: React.FC<FiyatListesiFormProps> = ({ onDocumentLoaded })
                             }}
                             onSelect={(cari: any) => {
                                 const cariId = cari.id ?? cari.Id;
-                                const cariUnvan = cari.tipi === 1 
-                                    ? (cari.unvan || cari.kod || '')
-                                    : (cari.unvan || `${cari.ad || ''} ${cari.soyad || ''}`.trim() || cari.kod || '');
+                                const cariUnvan = cari.unvan
+                                    || cari.Unvan
+                                    || `${cari.ad || cari.Ad || ''} ${cari.soyad || cari.Soyad || ''}`.trim()
+                                    || cari.kod
+                                    || cari.Kod
+                                    || '';
 
                                 setFormData((prev: any) => ({ 
                                     ...prev, 

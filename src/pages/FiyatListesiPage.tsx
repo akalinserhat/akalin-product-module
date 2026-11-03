@@ -28,7 +28,15 @@ const FiyatListesiPage: React.FC = () => {
                     ? (belgeNo || t('FiyatListesi_duzenleTitle') || 'Fiyat Listesi Düzenle') 
                     : (t('FiyatListesi_yeniTitle') || 'Yeni Fiyat Listesi'))));
 
-    useDocumentLayout(title, () => (isCloudRoute || isExcelImportRoute || isCariSecimRoute) ? navigate(parentPath) : navigate('/fiyat-listeleri'));
+    const handleBack = React.useCallback(() => {
+        if (isCloudRoute || isExcelImportRoute || isCariSecimRoute) {
+            navigate(parentPath);
+        } else {
+            navigate('/fiyat-listeleri');
+        }
+    }, [isCloudRoute, isExcelImportRoute, isCariSecimRoute, parentPath, navigate]);
+
+    useDocumentLayout(title, handleBack);
 
     const handleDocumentLoaded = React.useCallback((data: any) => {
         if (data?.belgeNo) {
