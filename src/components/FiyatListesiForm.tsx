@@ -369,6 +369,7 @@ const FiyatListesiForm: React.FC<FiyatListesiFormProps> = ({ onDocumentLoaded })
             const res = await axios.get(`/api/FiyatListeleri/${id}`);
             const data = res.data;
             const cariUnvani = data.cariUnvani || data.cariUnvan || (data.cari ? (data.cari.unvan || `${data.cari.ad || ''} ${data.cari.soyad || ''}`.trim()) : '');
+            setErrors({});
             setFormData({
                 ...data,
                 cariUnvani: cariUnvani,
@@ -515,9 +516,14 @@ const FiyatListesiForm: React.FC<FiyatListesiFormProps> = ({ onDocumentLoaded })
     }, [formData.kalemler, t]);
 
     const addKalem = () => {
-        const validation = validateGridBeforeAdd(formData.kalemler);
-        if (!validation.canAdd) {
+        if (isEditMode && !formData.id && !formData.Id) {
             return;
+        }
+        if (formData.kalemler && formData.kalemler.length > 0) {
+            const validation = validateGridBeforeAdd(formData.kalemler);
+            if (!validation.canAdd) {
+                return;
+            }
         }
         setFormData(prev => ({
             ...prev,

@@ -49,8 +49,7 @@ export const validateKalemlerBeforeAdd = (kalemler: any[]): KalemValidationResul
     const t = (key: string, fallback?: string) => i18n.t(key, fallback || key);
     if (!kalemler || kalemler.length === 0) {
         return {
-            canAdd: false,
-            errorMessage: t('auto_en_az_bir_satir_girilmeli', 'En az bir satır bilgi girilmelidir.')
+            canAdd: true
         };
     }
 
