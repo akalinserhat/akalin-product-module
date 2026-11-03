@@ -37,13 +37,30 @@ const BshFiyatFarkiForm: React.FC = () => {
     const [urunAramaMetni, setUrunAramaMetni] = useState('');
     const [activeRowId, setActiveRowId] = useState<any>(null);
     
-    const [formData, setFormData] = useState<any>({
-        belgeNo: '[OTOMATİK]',
-        baslangicTarihi: new Date().toISOString().substring(0, 10),
-        bitisTarihi: '',
-        aciklama: '',
-        kalemler: []
+    const [formData, setFormData] = useState<any>(() => {
+        if (location.state?.currentFormData) {
+            return location.state.currentFormData;
+        }
+        return {
+            belgeNo: '[OTOMATİK]',
+            baslangicTarihi: new Date().toISOString().substring(0, 10),
+            bitisTarihi: '',
+            aciklama: '',
+            kalemler: []
+        };
     });
+
+    const formDataRef = React.useRef(formData);
+    useEffect(() => {
+        formDataRef.current = formData;
+    }, [formData]);
+
+    useEffect(() => {
+        if (location.state?.currentFormData) {
+            setFormData(location.state.currentFormData);
+            formDataRef.current = location.state.currentFormData;
+        }
+    }, [location.state?.currentFormData]);
 
     const isExcelImportRoute = location.pathname.endsWith('/excel-import');
     const [isExcelImportOpen, setIsExcelImportOpen] = useState(false);
@@ -61,7 +78,7 @@ const BshFiyatFarkiForm: React.FC = () => {
             navigate(`${cleanPath}/excel-import`, {
                 state: {
                     ...location.state,
-                    currentFormData: formData || location.state?.currentFormData
+                    currentFormData: formDataRef.current || formData || location.state?.currentFormData
                 }
             });
         }
@@ -73,9 +90,10 @@ const BshFiyatFarkiForm: React.FC = () => {
         if (location.pathname.endsWith('/excel-import')) {
             const parentPath = location.pathname.replace(/\/excel-import$/, '');
             navigate(parentPath, {
+                replace: true,
                 state: {
                     ...location.state,
-                    currentFormData: formData || location.state?.currentFormData
+                    currentFormData: formDataRef.current || formData || location.state?.currentFormData
                 }
             });
         }
@@ -253,7 +271,9 @@ const BshFiyatFarkiForm: React.FC = () => {
 
     useEffect(() => {
         if (isEditMode) {
-            fetchBelge();
+            if (!location.state?.currentFormData) {
+                fetchBelge();
+            }
         } else {
             checkBelgeAyari();
             setFormData(prev => {
@@ -349,9 +369,13 @@ const BshFiyatFarkiForm: React.FC = () => {
     const { handleImport } = useExcelProductImport();
 
     const handleExcelImport = async (rawImportedData: any[]) => {
-        await handleImport(rawImportedData, {
-            currentRows: formData.kalemler,
-            onUpdateRows: (newRows) => setFormData(prev => ({ ...prev, kalemler: newRows })),
+        const currentData = formDataRef.current || formData;
+        const newKalemler = await handleImport(rawImportedData, {
+            currentRows: currentData.kalemler,
+            onUpdateRows: (newRows) => {
+                setFormData(prev => ({ ...prev, kalemler: newRows }));
+                formDataRef.current = { ...formDataRef.current, kalemler: newRows };
+            },
             rowMapper: (importedRow, matchedProduct) => {
                 const kdvOrani = matchedProduct?.KdvOrani || 0;
                 let finalFiyat = importedRow.fiyat || 0;
@@ -364,14 +388,21 @@ const BshFiyatFarkiForm: React.FC = () => {
                 return {
                     tedarikciUrunKodu: importedRow.tedarikciUrunKodu,
                     fiyat: finalFiyat,
-                    ...(matchedProduct ? {
-                        urunVeHizmetKartiId: matchedProduct.Id,
-                        urunVeHizmetAdi: matchedProduct.ad || matchedProduct.Ad,
-                        aramaMetni: matchedProduct.ad || matchedProduct.Ad
-                    } : {})
+                    urunVeHizmetKartiId: matchedProduct ? (matchedProduct.Id || matchedProduct.id) : null,
+                    urunVeHizmetAdi: matchedProduct ? (matchedProduct.ad || matchedProduct.Ad) : '',
+                    aramaMetni: matchedProduct ? (matchedProduct.ad || matchedProduct.Ad) : ''
                 };
             }
         });
+
+        if (newKalemler && newKalemler.length > 0) {
+            const updated = {
+                ...formDataRef.current,
+                kalemler: newKalemler
+            };
+            formDataRef.current = updated;
+            setFormData(updated);
+        }
     };
 
     const checkBelgeAyari = async () => {

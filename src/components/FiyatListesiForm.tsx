@@ -86,6 +86,11 @@ const FiyatListesiForm: React.FC<FiyatListesiFormProps> = ({ onDocumentLoaded })
         };
     });
 
+    const formDataRef = useRef(formData);
+    useEffect(() => {
+        formDataRef.current = formData;
+    }, [formData]);
+
     const isInitialMount = useRef(true);
 
     useEffect(() => {
@@ -114,7 +119,7 @@ const FiyatListesiForm: React.FC<FiyatListesiFormProps> = ({ onDocumentLoaded })
             navigate(`${cleanPath}/excel-import`, {
                 state: {
                     ...location.state,
-                    currentFormData: formData || location.state?.currentFormData
+                    currentFormData: formDataRef.current || formData || location.state?.currentFormData
                 }
             });
         }
@@ -126,9 +131,10 @@ const FiyatListesiForm: React.FC<FiyatListesiFormProps> = ({ onDocumentLoaded })
         if (location.pathname.endsWith('/excel-import')) {
             const parentPath = location.pathname.replace(/\/excel-import$/, '');
             navigate(parentPath, {
+                replace: true,
                 state: {
                     ...location.state,
-                    currentFormData: formData || location.state?.currentFormData
+                    currentFormData: formDataRef.current || formData || location.state?.currentFormData
                 }
             });
         }
@@ -381,8 +387,12 @@ const FiyatListesiForm: React.FC<FiyatListesiFormProps> = ({ onDocumentLoaded })
     };
 
     useEffect(() => {
-        if (location.state?.currentFormData && onDocumentLoaded) {
-            onDocumentLoaded(location.state.currentFormData);
+        if (location.state?.currentFormData) {
+            setFormData(location.state.currentFormData);
+            formDataRef.current = location.state.currentFormData;
+            if (onDocumentLoaded) {
+                onDocumentLoaded(location.state.currentFormData);
+            }
         }
     }, [location.state?.currentFormData, onDocumentLoaded]);
 
@@ -570,24 +580,40 @@ const FiyatListesiForm: React.FC<FiyatListesiFormProps> = ({ onDocumentLoaded })
     const { handleImport } = useExcelProductImport();
 
     const handleExcelImport = async (rawImportedData: any[]) => {
-        await handleImport(rawImportedData, {
-            currentRows: formData.kalemler,
-            onUpdateRows: (newRows) => setFormData(prev => ({ ...prev, kalemler: newRows })),
+        const currentData = formDataRef.current || formData;
+        const newKalemler = await handleImport(rawImportedData, {
+            currentRows: currentData.kalemler,
+            onUpdateRows: (newRows) => {
+                setFormData(prev => ({ ...prev, kalemler: newRows }));
+                formDataRef.current = { ...formDataRef.current, kalemler: newRows };
+            },
             rowMapper: (importedRow, matchedProduct) => {
-                const valorTarihi = importedRow.valorTarihiTuru === 'manuel' ? importedRow.valorTarihiManuel : importedRow.valorTarihiSutun;
+                const valorTarihi = importedRow.valorTarihiTuru === 'manuel' 
+                    ? importedRow.valorTarihiManuel 
+                    : importedRow.valorTarihiSutun;
                 
                 return {
                     tedarikciUrunKodu: importedRow.tedarikciUrunKodu,
                     fiyat: importedRow.fiyat,
-                    valorTarihi: valorTarihi || '',
-                    ...(matchedProduct ? {
-                        urunVeHizmetKartiId: matchedProduct.Id,
-                        urunVeHizmetAdi: matchedProduct.ad || matchedProduct.Ad,
-                        aramaMetni: matchedProduct.ad || matchedProduct.Ad
-                    } : {})
+                    valorTarihi: valorTarihi || currentData.baslangicTarihi || new Date().toISOString().substring(0, 10),
+                    urunVeHizmetKartiId: matchedProduct ? (matchedProduct.Id || matchedProduct.id) : null,
+                    urunVeHizmetAdi: matchedProduct ? (matchedProduct.ad || matchedProduct.Ad) : '',
+                    aramaMetni: matchedProduct ? (matchedProduct.ad || matchedProduct.Ad) : ''
                 };
             }
         });
+
+        if (newKalemler && newKalemler.length > 0) {
+            const updated = {
+                ...formDataRef.current,
+                kalemler: newKalemler
+            };
+            formDataRef.current = updated;
+            setFormData(updated);
+            if (!id) {
+                DocumentDraftManager.saveDocumentDraft('/fiyat-listeleri', 'FiyatListesi', updated);
+            }
+        }
     };
 
     const handleSave = async (e: React.FormEvent) => {

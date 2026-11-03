@@ -23,9 +23,10 @@ export interface ExcelImportOptions {
 export const useExcelProductImport = () => {
     const { t } = useTranslation();
 
-    const handleImport = async (rawImportedData: any[], options: ExcelImportOptions) => {
+    const handleImport = async (rawImportedData: any[], options: ExcelImportOptions): Promise<any[]> => {
         if (options.customImportHandler) {
-            return options.customImportHandler(rawImportedData);
+            await options.customImportHandler(rawImportedData);
+            return options.currentRows || [];
         }
 
         const { currentRows, onUpdateRows, rowMapper } = options;
@@ -47,7 +48,7 @@ export const useExcelProductImport = () => {
 
         if (importedData.length === 0) {
             toast.error(t('Aktarılacak geçerli veri bulunamadı.'));
-            return;
+            return currentRows || [];
         }
 
         // Grid'deki mevcut satırlar
@@ -145,6 +146,8 @@ export const useExcelProductImport = () => {
         } else {
             toast.success(t('İşlem tamamlandı, eklenecek/güncellenecek veri bulunamadı.'));
         }
+
+        return newKalemler;
     };
 
     return { handleImport };
