@@ -62,6 +62,121 @@ const BshFiyatFarkiForm: React.FC = () => {
         }
     }, [location.state?.currentFormData]);
 
+    useEffect(() => {
+        if (isEditMode || !location.state?.initialAiData) return;
+
+        const aiData = location.state.initialAiData;
+        const parseAiDate = (raw?: any): string => {
+            if (!raw) return '';
+            const clean = String(raw).trim();
+            if (/^\d{4}-\d{2}-\d{2}/.test(clean)) return clean.substring(0, 10);
+            const parts = clean.split(/[./]/);
+            if (parts.length === 3) {
+                const [d, m, y] = parts;
+                return `${y.substring(0, 4)}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+            }
+            return clean.substring(0, 10);
+        };
+
+        const rawItems: any[] =
+            (Array.isArray(aiData.kalemler) && aiData.kalemler) ||
+            (Array.isArray(aiData.items) && aiData.items) ||
+            (Array.isArray(aiData.urunler) && aiData.urunler) ||
+            (Array.isArray(aiData.fiyatFarklari) && aiData.fiyatFarklari) ||
+            (Array.isArray(aiData.documentContent?.kalemler) && aiData.documentContent.kalemler) ||
+            [];
+
+        const mappedKalemler = rawItems
+            .map((item: any, index: number) => {
+                const code = String(item.tedarikciUrunKodu || item.urunKodu || item.kod || item.kodu || item.modelKodu || item.code || '').trim();
+                if (!code) return null;
+                const fiyat = Number(item.fiyat ?? item.fiyatFarki ?? item.tutar ?? item.price ?? 0) || 0;
+                const urunId = item.urunVeHizmetKartiId || item.urunVeHizmetId || null;
+                const urunAdi = item.urunVeHizmetAdi || '';
+                return {
+                    id: Date.now() + index + Math.random(),
+                    tedarikciUrunKodu: code,
+                    fiyat,
+                    kdvDahilMi: item.kdvDahilMi !== false,
+                    urunVeHizmetKartiId: urunId,
+                    urunVeHizmetAdi: urunAdi,
+                    aramaMetni: urunAdi
+                };
+            })
+            .filter(Boolean);
+
+        const baslangic = parseAiDate(aiData.baslangicTarihi || aiData.header?.baslangicTarihi || aiData.startDate);
+        const bitis = parseAiDate(aiData.bitisTarihi || aiData.header?.bitisTarihi || aiData.endDate);
+        const aciklama = aiData.aciklama || aiData.header?.aciklama || aiData.adi || aiData.header?.adi || '';
+
+        setFormData((prev: any) => {
+            const next = {
+                ...prev,
+                baslangicTarihi: baslangic || prev.baslangicTarihi,
+                bitisTarihi: bitis || prev.bitisTarihi,
+                aciklama: aciklama || prev.aciklama,
+                kalemler: mappedKalemler.length > 0 ? mappedKalemler : prev.kalemler
+            };
+            formDataRef.current = next;
+            return next;
+        });
+
+        const unmatchedCodes = mappedKalemler
+            .filter((k: any) => !k.urunVeHizmetKartiId && k.tedarikciUrunKodu)
+            .map((k: any) => k.tedarikciUrunKodu);
+
+        if (unmatchedCodes.length > 0) {
+            axios.post('/api/UrunVeHizmetKartlari/bulk-lookup', Array.from(new Set(unmatchedCodes)))
+                .then((res) => {
+                    const products = Array.isArray(res.data) ? res.data : [];
+                    if (products.length === 0) return;
+
+                    const productMap: Record<string, any> = {};
+                    products.forEach((p: any) => {
+                        const kod = p.kod || p.Kod;
+                        const ureticiKodu = p.ureticiKodu || p.UreticiKodu;
+                        const barkod = p.barkod || p.Barkod;
+                        const entry = {
+                            id: p.id || p.Id,
+                            ad: p.ad || p.Ad || '',
+                            kdvOrani: p.kdvOrani || p.KdvOrani || 0
+                        };
+                        if (kod) productMap[String(kod).trim().toUpperCase()] = entry;
+                        if (ureticiKodu) productMap[String(ureticiKodu).trim().toUpperCase()] = entry;
+                        if (barkod) productMap[String(barkod).trim().toUpperCase()] = entry;
+                    });
+
+                    setFormData((prev: any) => {
+                        const updatedKalemler = (prev.kalemler || []).map((k: any) => {
+                            if (k.urunVeHizmetKartiId) return k;
+                            const lookupKey = String(k.tedarikciUrunKodu || '').trim().toUpperCase();
+                            const matched = lookupKey ? productMap[lookupKey] : null;
+                            if (!matched) return k;
+
+                            let finalFiyat = k.fiyat || 0;
+                            if (k.kdvDahilMi === false && matched.kdvOrani > 0) {
+                                finalFiyat = Number((finalFiyat * (1 + matched.kdvOrani / 100)).toFixed(2));
+                            }
+                            return {
+                                ...k,
+                                fiyat: finalFiyat,
+                                kdvDahilMi: true,
+                                urunVeHizmetKartiId: matched.id,
+                                urunVeHizmetAdi: matched.ad,
+                                aramaMetni: matched.ad
+                            };
+                        });
+                        const next = { ...prev, kalemler: updatedKalemler };
+                        formDataRef.current = next;
+                        return next;
+                    });
+                })
+                .catch((err) => console.error('AI draft product bulk lookup failed:', err));
+        }
+
+        toast.success(t('auto_ai_taslak_aktarildi', 'Yapay zeka fiyat farkı taslağı forma aktarıldı.'));
+    }, [isEditMode, location.state?.initialAiData, t]);
+
     const isExcelImportRoute = location.pathname.endsWith('/excel-import');
     const [isExcelImportOpen, setIsExcelImportOpen] = useState(false);
     const showExcelImport = isExcelImportRoute || isExcelImportOpen;
