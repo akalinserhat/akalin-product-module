@@ -9,19 +9,19 @@ import { useTranslation } from 'react-i18next';
 import { toast } from 'react-hot-toast';
 
 import {
-    BaseDocumentPage,
-    DocumentHeaderPanel,
-    DocumentHeaderField,
-    DocumentResultPanel,
-    DocumentResultPanelsGroup,
-    CurrencyInput,
-    KdvSecici,
-    UrunSeciciModal,
-    NotInput,
-    BasitInput,
-    DateRangeInput,
-    UrunSeciciInput
-} from '@akalin/ui';
+        BaseDocumentPage,
+        DocumentHeaderPanel,
+        DocumentHeaderField,
+        DocumentResultPanel,
+        DocumentResultPanelsGroup,
+        CurrencyInput,
+        KdvSecici,
+        UrunSeciciModal,
+        NotInput,
+        BasitInput,
+        DateRangeInput,
+        UrunSeciciInput
+    } from '@akalin/ui';
 import ExcelImportPage, { type ExcelColumnDef } from './ExcelImportPage';
 import { FileText, AlignLeft, Percent } from 'lucide-react';
 import { useExcelProductImport } from '../hooks/useExcelProductImport';
@@ -46,6 +46,7 @@ const BshFiyatFarkiForm: React.FC = () => {
     const [urunModalOpen, setUrunModalOpen] = useState(false);
     const [urunAramaMetni, setUrunAramaMetni] = useState('');
     const [activeRowId, setActiveRowId] = useState<any>(null);
+
     const [kdvGruplari, setKdvGruplari] = useState<any[]>([]);
 
     const [formData, setFormData] = useState<any>(() => {
@@ -174,24 +175,27 @@ const BshFiyatFarkiForm: React.FC = () => {
             (Array.isArray(aiData.documentContent?.kalemler) && aiData.documentContent.kalemler) ||
             [];
 
+        const aiHeaderKdv = aiData.kdvOrani ?? aiData.header?.kdvOrani;
         const currentHeaderOran =
-            Number(formDataRef.current?.kdvOrani) > 0
-                ? Number(formDataRef.current.kdvOrani)
-                : getMaxKdvGrubu(kdvGruplariRef.current)?.oran ?? 20;
+            aiHeaderKdv !== undefined && aiHeaderKdv !== null
+                ? Number(aiHeaderKdv)
+                : Number(formDataRef.current?.kdvOrani) > 0
+                    ? Number(formDataRef.current.kdvOrani)
+                    : getMaxKdvGrubu(kdvGruplariRef.current)?.oran ?? 20;
         const currentHeaderGrubuId =
-            formDataRef.current?.kdvGrubuId ||
-            resolveKdvGrubuId(kdvGruplariRef.current, null, currentHeaderOran);
+            resolveKdvGrubuId(kdvGruplariRef.current, null, currentHeaderOran) ||
+            formDataRef.current?.kdvGrubuId;
 
         const mappedKalemler = rawItems
             .map((item: any, index: number) => {
                 const code = String(
                     item.tedarikciUrunKodu ||
-                        item.urunKodu ||
-                        item.kod ||
-                        item.kodu ||
-                        item.modelKodu ||
-                        item.code ||
-                        ''
+                    item.urunKodu ||
+                    item.kod ||
+                    item.kodu ||
+                    item.modelKodu ||
+                    item.code ||
+                    ''
                 ).trim();
                 if (!code) return null;
                 const rawFiyat = Number(item.fiyat ?? item.fiyatFarki ?? item.tutar ?? item.price ?? 0) || 0;
@@ -215,15 +219,15 @@ const BshFiyatFarkiForm: React.FC = () => {
 
                 const prices = hasExplicitHaric
                     ? {
-                          kdvHaricFiyat: Number(Number(item.kdvHaricFiyat).toFixed(2)),
-                          fiyat: Number(rawFiyat.toFixed(2))
-                      }
+                        kdvHaricFiyat: Number(Number(item.kdvHaricFiyat).toFixed(2)),
+                        fiyat: Number(rawFiyat.toFixed(2))
+                    }
                     : calculateBshKalemPrices({
-                          fiyatGirisYonu: kdvDahilMi ? 'dahil' : 'haric',
-                          kdvHaricFiyat: kdvDahilMi ? undefined : rawFiyat,
-                          fiyat: kdvDahilMi ? rawFiyat : undefined,
-                          kdvOrani: itemKdvOrani
-                      });
+                        fiyatGirisYonu: kdvDahilMi ? 'dahil' : 'haric',
+                        kdvHaricFiyat: kdvDahilMi ? undefined : rawFiyat,
+                        fiyat: kdvDahilMi ? rawFiyat : undefined,
+                        kdvOrani: itemKdvOrani
+                    });
 
                 return {
                     id: Date.now() + index + Math.random(),
@@ -254,6 +258,8 @@ const BshFiyatFarkiForm: React.FC = () => {
                 baslangicTarihi: baslangic || prev.baslangicTarihi,
                 bitisTarihi: bitis || prev.bitisTarihi,
                 aciklama: aciklama || prev.aciklama,
+                kdvOrani: currentHeaderOran,
+                kdvGrubuId: currentHeaderGrubuId ?? prev.kdvGrubuId,
                 kalemler: mappedKalemler.length > 0 ? mappedKalemler : prev.kalemler
             };
             formDataRef.current = next;
@@ -375,6 +381,7 @@ const BshFiyatFarkiForm: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState<string | number>(1);
 
+
     const tabs = [
         { id: 1, title: t('Genel', 'Genel'), icon: <FileText size={16} /> },
         { id: 2, title: t('auto_kdv_orani', 'KDV Oranı'), icon: <Percent size={16} /> },
@@ -473,6 +480,7 @@ const BshFiyatFarkiForm: React.FC = () => {
     const handleCodeLookup = async (kalem: any, code: string) => {
         if (!code || code.trim() === '') return;
 
+
         try {
             const res = await axios.post('/api/UrunVeHizmetKartlari/bulk-lookup', [code.trim()]);
             const matchedProducts = res.data;
@@ -484,6 +492,7 @@ const BshFiyatFarkiForm: React.FC = () => {
                     kdvOrani: Number(p.kdvOrani ?? p.KdvOrani ?? 0),
                     kdvGrubuId: p.kdvGrubuId ?? p.KdvGrubuId ?? null
                 };
+
 
                 if (kalem.urunVeHizmetKartiId === matchedProduct.id) return;
 
@@ -599,30 +608,31 @@ const BshFiyatFarkiForm: React.FC = () => {
                         const idx = newKalemler.findIndex((k) => k.id === row.id);
                         if (idx > -1) {
                             const headerOran = Number(formData.kdvOrani ?? 0);
-                            const headerGrubuId = resolveKdvGrubuId(
-                                kdvGruplari,
-                                formData.kdvGrubuId,
-                                headerOran
-                            );
-                            const currentRow = newKalemler[idx];
-                            const prices = calculateBshKalemPrices({
-                                fiyatGirisYonu: currentRow.fiyatGirisYonu || 'dahil',
-                                kdvHaricFiyat: currentRow.kdvHaricFiyat,
-                                fiyat: currentRow.fiyat,
-                                kdvOrani: headerOran
-                            });
-                            newKalemler[idx] = {
-                                ...currentRow,
-                                urunVeHizmetKartiId: null,
-                                urunVeHizmetAdi: '',
-                                aramaMetni: '',
-                                kdvOrani: headerOran,
-                                kdvGrubuId: headerGrubuId,
-                                ...prices
-                            };
-                            setFormData({ ...formData, kalemler: newKalemler });
+                                const headerGrubuId = resolveKdvGrubuId(
+                                    kdvGruplari,
+                                    formData.kdvGrubuId,
+                                    headerOran
+                                );
+                                const currentRow = newKalemler[idx];
+                                const prices = calculateBshKalemPrices({
+                                    fiyatGirisYonu: currentRow.fiyatGirisYonu || 'dahil',
+                                    kdvHaricFiyat: currentRow.kdvHaricFiyat,
+                                    fiyat: currentRow.fiyat,
+                                    kdvOrani: headerOran
+                                });
+                                newKalemler[idx] = {
+                                    ...currentRow,
+                                    urunVeHizmetKartiId: null,
+                                    urunVeHizmetAdi: '',
+                                    aramaMetni: '',
+                                    kdvOrani: headerOran,
+                                    kdvGrubuId: headerGrubuId,
+                                    ...prices
+                                };
+                                setFormData({ ...formData, kalemler: newKalemler });
+                            }
                         }
-                    }}
+                    }
                 />
             )
         },
@@ -799,14 +809,14 @@ const BshFiyatFarkiForm: React.FC = () => {
                             Number(k.kdvHaricFiyat) > 0;
                         const prices = hasSavedHaric
                             ? {
-                                  kdvHaricFiyat: Number(Number(k.kdvHaricFiyat).toFixed(2)),
-                                  fiyat: Number(Number(k.fiyat ?? 0).toFixed(2))
-                              }
+                                kdvHaricFiyat: Number(Number(k.kdvHaricFiyat).toFixed(2)),
+                                fiyat: Number(Number(k.fiyat ?? 0).toFixed(2))
+                            }
                             : calculateBshKalemPrices({
-                                  fiyatGirisYonu: 'dahil',
-                                  fiyat: k.fiyat ?? 0,
-                                  kdvOrani: satirOran
-                              });
+                                fiyatGirisYonu: 'dahil',
+                                fiyat: k.fiyat ?? 0,
+                                kdvOrani: satirOran
+                            });
 
                         return {
                             ...k,
@@ -831,21 +841,21 @@ const BshFiyatFarkiForm: React.FC = () => {
             }
         } else {
             checkBelgeAyari();
-            setFormData((prev: any) => {
-                if (!prev.kalemler || prev.kalemler.length === 0) {
-                    return {
-                        ...prev,
+                setFormData((prev: any) => {
+                    if (!prev.kalemler || prev.kalemler.length === 0) {
+                        return {
+                            ...prev,
                         kalemler: [
-                            createEmptyBshFiyatFarkiKalem(
-                                Number(prev.kdvOrani ?? 0),
-                                prev.kdvGrubuId
-                            )
-                        ]
-                    };
-                }
-                return prev;
-            });
-        }
+                                createEmptyBshFiyatFarkiKalem(
+                                    Number(prev.kdvOrani ?? 0),
+                                    prev.kdvGrubuId
+                                )
+                            ]
+                        };
+                    }
+                    return prev;
+                });
+            }
     }, [id]);
 
     useEffect(() => {
@@ -917,7 +927,9 @@ const BshFiyatFarkiForm: React.FC = () => {
 
         const handleUrunCreatedEvent = (e: any) => handleUrunCreated(e.detail);
 
+
         window.addEventListener('urun-created', handleUrunCreatedEvent);
+
 
         let bc: BroadcastChannel | null = null;
         try {
@@ -938,176 +950,178 @@ const BshFiyatFarkiForm: React.FC = () => {
     }, [t]);
 
     const addKalem = () => {
-        setFormData((prev: any) => ({
-            ...prev,
-            kalemler: [
-                ...(prev.kalemler || []),
+            setFormData((prev: any) => ({
+                ...prev,
+                kalemler: [
+                    ...(prev.kalemler || []),
                 createEmptyBshFiyatFarkiKalem(Number(prev.kdvOrani ?? 0), prev.kdvGrubuId)
-            ]
-        }));
+                ]
+            }));
     };
 
-    const removeKalem = (rowId: any) => {
+const removeKalem = (rowId: any) => {
         setFormData((prev: any) => ({
             ...prev,
             kalemler: prev.kalemler.filter((k: any) => k.id !== rowId)
         }));
     };
 
-    const isEmptyRow = (row: any) => !row.urunVeHizmetKartiId && !row.tedarikciUrunKodu;
+const isEmptyRow = (row: any) => !row.urunVeHizmetKartiId && !row.tedarikciUrunKodu;
 
-    const { handleImport } = useExcelProductImport();
+const { handleImport } = useExcelProductImport();
 
-    const handleExcelImport = async (rawImportedData: any[]) => {
-        const currentData = formDataRef.current || formData;
-        const headerOran = Number(currentData.kdvOrani ?? 0);
-        const headerGrubuId = currentData.kdvGrubuId;
+const handleExcelImport = async (rawImportedData: any[]) => {
+    const currentData = formDataRef.current || formData;
+    const headerOran = Number(currentData.kdvOrani ?? 0);
+    const headerGrubuId = currentData.kdvGrubuId;
 
-        const newKalemler = await handleImport(rawImportedData, {
-            currentRows: currentData.kalemler,
-            onUpdateRows: (newRows) => {
-                setFormData((prev: any) => ({ ...prev, kalemler: newRows }));
-                formDataRef.current = { ...formDataRef.current, kalemler: newRows };
-            },
-            rowMapper: (importedRow, matchedProduct) => {
-                const isMatched = Boolean(matchedProduct);
-                const kdvOrani = isMatched
-                    ? Number(matchedProduct.KdvOrani ?? matchedProduct.kdvOrani ?? 0)
-                    : headerOran;
-                const kdvGrubuId = isMatched
-                    ? resolveKdvGrubuId(
-                          kdvGruplariRef.current,
-                          matchedProduct.kdvGrubuId ?? matchedProduct.KdvGrubuId,
-                          kdvOrani
-                      )
-                    : headerGrubuId;
-
-                const rawFiyat = Number(importedRow.fiyat || 0);
-                const isHaric = importedRow.kdvDurumu === 'haric';
-                const prices = calculateBshKalemPrices({
-                    fiyatGirisYonu: isHaric ? 'haric' : 'dahil',
-                    kdvHaricFiyat: isHaric ? rawFiyat : undefined,
-                    fiyat: isHaric ? undefined : rawFiyat,
+    const newKalemler = await handleImport(rawImportedData, {
+        currentRows: currentData.kalemler,
+        onUpdateRows: (newRows) => {
+            setFormData((prev: any) => ({ ...prev, kalemler: newRows }));
+            formDataRef.current = { ...formDataRef.current, kalemler: newRows };
+        },
+        rowMapper: (importedRow, matchedProduct) => {
+            const isMatched = Boolean(matchedProduct);
+            const kdvOrani = isMatched
+                ? Number(matchedProduct.KdvOrani ?? matchedProduct.kdvOrani ?? 0)
+                : headerOran;
+            const kdvGrubuId = isMatched
+                ? resolveKdvGrubuId(
+                    kdvGruplariRef.current,
+                    matchedProduct.kdvGrubuId ?? matchedProduct.KdvGrubuId,
                     kdvOrani
-                });
+                )
+                : headerGrubuId;
 
-                return {
-                    tedarikciUrunKodu: importedRow.tedarikciUrunKodu,
+            const rawFiyat = Number(importedRow.fiyat || 0);
+            const isHaric = importedRow.kdvDurumu === 'haric';
+            const prices = calculateBshKalemPrices({
+                fiyatGirisYonu: isHaric ? 'haric' : 'dahil',
+                kdvHaricFiyat: isHaric ? rawFiyat : undefined,
+                fiyat: isHaric ? undefined : rawFiyat,
+                kdvOrani
+            });
+
+            return {
+                tedarikciUrunKodu: importedRow.tedarikciUrunKodu,
                     kdvOrani,
-                    kdvGrubuId,
-                    kdvHaricFiyat: prices.kdvHaricFiyat,
-                    fiyat: prices.fiyat,
-                    fiyatGirisYonu: isHaric ? ('haric' as const) : ('dahil' as const),
-                    urunVeHizmetKartiId: matchedProduct
-                        ? matchedProduct.Id || matchedProduct.id
-                        : null,
-                    urunVeHizmetAdi: matchedProduct
-                        ? matchedProduct.ad || matchedProduct.Ad
-                        : '',
-                    aramaMetni: matchedProduct ? matchedProduct.ad || matchedProduct.Ad : ''
-                };
-            }
-        });
-
-        if (newKalemler && newKalemler.length > 0) {
-            const updated = {
-                ...formDataRef.current,
-                kalemler: newKalemler
+                kdvGrubuId,
+                kdvHaricFiyat: prices.kdvHaricFiyat,
+                fiyat: prices.fiyat,
+                fiyatGirisYonu: isHaric ? ('haric' as const) : ('dahil' as const),
+                urunVeHizmetKartiId: matchedProduct
+                    ? matchedProduct.Id || matchedProduct.id
+                    : null,
+                urunVeHizmetAdi: matchedProduct
+                    ? matchedProduct.ad || matchedProduct.Ad
+                    : '',
+                aramaMetni: matchedProduct ? matchedProduct.ad || matchedProduct.Ad : ''
             };
-            formDataRef.current = updated;
-            setFormData(updated);
         }
-    };
-
-    const checkBelgeAyari = async () => {
-        try {
-            const res = await axios.get(`/api/BelgeAyarlari/BshFiyatFarki`);
-            if (res.data?.otomatikNumaraVerilsinMi) {
-                setFormData((prev: any) => ({ ...prev, belgeNo: '[OTOMATİK]' }));
-            }
-        } catch (e) {
-            console.log('Belge ayarı okunamadı', e);
-        }
-    };
-
-    const handleSave = async (e?: React.FormEvent) => {
-        if (e && typeof e.preventDefault === 'function') {
-            e.preventDefault();
-        }
-
-        const { isValid, errors: validationErrors } = validateBshFiyatFarkiForm(formData, t);
-
-        if (!isValid) {
-            setErrors(validationErrors || {});
-            return;
-        }
-
-        setLoading(true);
-        try {
-            const headerOran = Number(formData.kdvOrani ?? 0);
-            const payload = {
-                ...formData,
-                kdvOrani: headerOran,
-                baslangicTarihi: formData.baslangicTarihi || null,
-                bitisTarihi: formData.bitisTarihi || null,
-                belgeNo: formData.belgeNo === '[OTOMATİK]' ? '' : formData.belgeNo,
-                kalemler: formData.kalemler
-                    .filter((k: any) => k.urunVeHizmetKartiId || k.tedarikciUrunKodu)
-                    .map((k: any) => {
-                        const satirOran =
-                            k.kdvOrani !== undefined && k.kdvOrani !== null
-                                ? Number(k.kdvOrani)
-                                : headerOran;
-                        const prices = calculateBshKalemPrices({
-                            fiyatGirisYonu: k.fiyatGirisYonu || 'dahil',
-                            kdvHaricFiyat: k.kdvHaricFiyat,
-                            fiyat: k.fiyat,
-                            kdvOrani: satirOran
-                        });
-                        return {
-                            ...k,
-                            id: typeof k.id === 'number' && k.id > 2000000000 ? 0 : k.id,
-                            kdvOrani: satirOran,
-                            kdvHaricFiyat: k.kdvHaricFiyat ?? prices.kdvHaricFiyat,
-                            fiyat: k.fiyat ?? prices.fiyat
-                        };
-                    })
-            };
-
-            if (isEditMode) {
-                await axios.put(`/api/BshFiyatFarki/${id}`, payload);
-                toast.success(t('auto_kayit_guncellendi', 'Kayıt güncellendi.'));
-            } else {
-                await axios.post('/api/BshFiyatFarki', payload);
-                toast.success(
-                    t('auto_kayit_basariyla_olusturuldu', 'Kayıt başarıyla oluşturuldu.')
-                );
-                navigate('/bsh-fiyat-farki');
-            }
-        } catch (error: any) {
-            toast.error(
-                error.response?.data?.message ||
-                    t('auto_kayit_basarisiz', 'Kayıt işlemi başarısız oldu.')
-            );
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const bshActionMenu = useBshFiyatFarkiActionMenu({
-        onExcelImportClick: handleOpenExcelImport
     });
 
-    const selectedHeaderKdvId = resolveKdvGrubuId(
-        kdvGruplari,
-        formData.kdvGrubuId,
-        formData.kdvOrani
-    );
+    if (newKalemler && newKalemler.length > 0) {
+        const updated = {
+            ...formDataRef.current,
+            kalemler: newKalemler
+        };
+        formDataRef.current = updated;
+        setFormData(updated);
+    }
+};
 
-    const headerContent = (
+const checkBelgeAyari = async () => {
+    try {
+        const res = await axios.get(`/api/BelgeAyarlari/BshFiyatFarki`);
+        if (res.data?.otomatikNumaraVerilsinMi) {
+            setFormData((prev: any) => ({ ...prev, belgeNo: '[OTOMATİK]' }));
+        }
+    } catch (e) {
+        console.log('Belge ayarı okunamadı', e);
+    }
+};
+
+const handleSave = async (e?: React.FormEvent) => {
+    if (e && typeof e.preventDefault === 'function') {
+        e.preventDefault();
+    }
+
+
+    const { isValid, errors: validationErrors } = validateBshFiyatFarkiForm(formData, t);
+
+
+    if (!isValid) {
+        setErrors(validationErrors || {});
+        return;
+    }
+
+    setLoading(true);
+    try {
+        const headerOran = Number(formData.kdvOrani ?? 0);
+        const payload = {
+            ...formData,
+            kdvOrani: headerOran,
+            baslangicTarihi: formData.baslangicTarihi || null,
+            bitisTarihi: formData.bitisTarihi || null,
+            belgeNo: formData.belgeNo === '[OTOMATİK]' ? '' : formData.belgeNo,
+            kalemler: formData.kalemler
+                .filter((k: any) => k.urunVeHizmetKartiId || k.tedarikciUrunKodu)
+                .map((k: any) => {
+                    const satirOran =
+                        k.kdvOrani !== undefined && k.kdvOrani !== null
+                            ? Number(k.kdvOrani)
+                            : headerOran;
+                    const prices = calculateBshKalemPrices({
+                        fiyatGirisYonu: k.fiyatGirisYonu || 'dahil',
+                        kdvHaricFiyat: k.kdvHaricFiyat,
+                        fiyat: k.fiyat,
+                        kdvOrani: satirOran
+                    });
+                    return {
+                        ...k,
+                        id: typeof k.id === 'number' && k.id > 2000000000 ? 0 : k.id,
+                        kdvOrani: satirOran,
+                        kdvHaricFiyat: k.kdvHaricFiyat ?? prices.kdvHaricFiyat,
+                        fiyat: k.fiyat ?? prices.fiyat
+                    };
+                })
+        };
+
+        if (isEditMode) {
+            await axios.put(`/api/BshFiyatFarki/${id}`, payload);
+            toast.success(t('auto_kayit_guncellendi', 'Kayıt güncellendi.'));
+        } else {
+            await axios.post('/api/BshFiyatFarki', payload);
+            toast.success(
+                t('auto_kayit_basariyla_olusturuldu', 'Kayıt başarıyla oluşturuldu.')
+            );
+            navigate('/bsh-fiyat-farki');
+        }
+    } catch (error: any) {
+        toast.error(
+            error.response?.data?.message ||
+            t('auto_kayit_basarisiz', 'Kayıt işlemi başarısız oldu.')
+        );
+    } finally {
+        setLoading(false);
+    }
+};
+
+const bshActionMenu = useBshFiyatFarkiActionMenu({
+    onExcelImportClick: handleOpenExcelImport
+});
+
+const selectedHeaderKdvId = resolveKdvGrubuId(
+    kdvGruplari,
+    formData.kdvGrubuId,
+    formData.kdvOrani
+);
+
+const headerContent = (
         <>
-            {activeTab === 1 && (
-                <DocumentHeaderPanel columns={2}>
+        {activeTab === 1 && (
+            <DocumentHeaderPanel columns={2}>
                     <DocumentHeaderField
                         name="baslangicTarihi"
                         label={t('TarihAraligi_label', 'Tarih Aralığı')}
@@ -1128,35 +1142,36 @@ const BshFiyatFarkiForm: React.FC = () => {
                                     bitisTarihi: bitis
                                 };
                                 if (errors.baslangicTarihi) {
-                                    setErrors((prev) => {
-                                        const next = { ...prev };
-                                        delete next.baslangicTarihi;
-                                        return next;
-                                    });
-                                }
+                                        setErrors((prev) => {
+                                            const next = { ...prev };
+                                            delete next.baslangicTarihi;
+                                            return next;
+                                        });
+                                    }
                                 if (errors.bitisTarihi) {
-                                    setErrors((prev) => {
-                                        const next = { ...prev };
-                                        delete next.bitisTarihi;
-                                        return next;
-                                    });
+                                            setErrors((prev) => {
+                                                const next = { ...prev };
+                                                delete next.bitisTarihi;
+                                                return next;
+                                            });
+                                        }
+                            }
                                 }
-                            }}
                         />
                     </DocumentHeaderField>
 
-                    <DocumentHeaderField
-                        name="belgeNo"
-                        label={t('auto_belge_no', 'Belge No')}
-                        required
-                    >
-                        <BasitInput
-                            id="belgeNoInput"
-                            value={formData.belgeNo}
-                            disabled={formData.belgeNo === '[OTOMATİK]'}
-                            onChange={(e) => {
+                        <DocumentHeaderField
+                            name="belgeNo"
+                            label={t('auto_belge_no', 'Belge No')}
+                            required
+                        >
+                            <BasitInput
+                                id="belgeNoInput"
+                                value={formData.belgeNo}
+                                disabled={formData.belgeNo === '[OTOMATİK]'}
+                                    onChange = {(e) => {
                                 setFormData({ ...formData, belgeNo: e.target.value });
-                                if (errors.belgeNo) {
+                            if (errors.belgeNo) {
                                     setErrors((prev) => {
                                         const next = { ...prev };
                                         delete next.belgeNo;
@@ -1164,173 +1179,174 @@ const BshFiyatFarkiForm: React.FC = () => {
                                     });
                                 }
                             }}
-                            onBlur={(e) => {
+                                onBlur = {(e) => {
                                 const err = validateBshFiyatFarkiField('belgeNo', e.target.value);
-                                if (err) {
-                                    setErrors((prev) => ({ ...prev, belgeNo: err }));
+                            if (err) {
+                                    setErrors((prev) => ({...prev, belgeNo: err }));
                                 }
                             }}
                         />
-                    </DocumentHeaderField>
-                </DocumentHeaderPanel>
+                        </DocumentHeaderField>
+                    </DocumentHeaderPanel>
             )}
 
-            {activeTab === 2 && (
-                <DocumentHeaderPanel columns={2}>
-                    <DocumentHeaderField
-                        name="kdvOrani"
-                        label={t('auto_kdv_orani', 'KDV Oranı')}
-                    >
-                        <KdvSecici
-                            id="bshHeaderKdvSecici"
-                            kdvGruplari={kdvGruplari}
-                            value={selectedHeaderKdvId}
-                            clearable={false}
-                            onChange={handleHeaderKdvChange}
-                        />
-                    </DocumentHeaderField>
-                </DocumentHeaderPanel>
-            )}
+                    {activeTab === 2 && (
+                        <DocumentHeaderPanel columns={2}>
+                            <DocumentHeaderField
+                                name="kdvOrani"
+                                label={t('auto_kdv_orani', 'KDV Oranı')}
+                            >
+                                <KdvSecici
+                                    id="bshHeaderKdvSecici"
+                                    kdvGruplari={kdvGruplari}
+                                    value={selectedHeaderKdvId}
+                                    clearable={false}
+                                    onChange={handleHeaderKdvChange}
+                                />
+                            </DocumentHeaderField>
+                        </DocumentHeaderPanel>
+                    )}
 
-            {activeTab === 3 && (
-                <DocumentHeaderPanel columns={1}>
-                    <DocumentHeaderField
-                        name="aciklama"
-                        label={t('auto_aciklama', 'Açıklama')}
-                    >
-                        <NotInput
-                            rows={3}
-                            value={formData.aciklama || ''}
-                            onChange={(e) =>
-                                setFormData({ ...formData, aciklama: e.target.value })
-                            }
-                        />
-                    </DocumentHeaderField>
-                </DocumentHeaderPanel>
-            )}
-        </>
-    );
+                    {activeTab === 3 && (
+                        <DocumentHeaderPanel columns={1}>
+                                <DocumentHeaderField
+                                    name="aciklama"
+                                    label={t('auto_aciklama', 'Açıklama')}
+                                >
+                                    <NotInput
+                                        rows={3}
+                                        value={formData.aciklama || ''}
+                                        onChange={(e) =>
+                                            setFormData({ ...formData, aciklama: e.target.value })
+                                        }
+                                    />
+                                </DocumentHeaderField>
+                        </DocumentHeaderPanel>
+                    )}
+                </>
+                );
 
-    const validRows =
+                const validRows =
         formData.kalemler?.filter((k: any) => k.urunVeHizmetKartiId || k.tedarikciUrunKodu) || [];
     const linkedRowsCount = validRows.filter((k: any) => k.urunVeHizmetKartiId).length;
 
-    const footerContent = (
-        <DocumentResultPanelsGroup align="end">
-            <DocumentResultPanel
-                title={t('auto_ozet', 'Özet')}
-                readOnly={true}
-                hideAddButton={true}
-                onSave={() => {}}
-                items={[
-                    {
-                        id: 'satirSayisi',
-                        label: t('Satır Sayısı', 'Satır Sayısı'),
-                        value: validRows.length.toString(),
-                        visibilityRule: 'p4',
-                        isEditable: false
-                    },
-                    {
-                        id: 'iliskilendirilmis',
-                        label: t('İlişkilendirilmiş Satır Sayısı', 'İlişkilendirilmiş Satır Sayısı'),
-                        value: linkedRowsCount.toString(),
-                        visibilityRule: 'p4',
-                        isPrimary: true,
-                        isAccent: true,
-                        isEditable: false
-                    }
-                ]}
-            />
-        </DocumentResultPanelsGroup>
-    );
+                const footerContent = (
+                <DocumentResultPanelsGroup align="end">
+                    <DocumentResultPanel
+                        title={t('auto_ozet', 'Özet')}
+                        readOnly={true}
+                        hideAddButton={true}
+                        onSave={() => { }}
+                        items={[
+                            {
+                                id: 'satirSayisi',
+                                label: t('Satır Sayısı', 'Satır Sayısı'),
+                                value: validRows.length.toString(),
+                                visibilityRule: 'p4',
+                                isEditable: false
+                            },
+                            {
+                                id: 'iliskilendirilmis',
+                                label: t('İlişkilendirilmiş Satır Sayısı', 'İlişkilendirilmiş Satır Sayısı'),
+                                value: linkedRowsCount.toString(),
+                                visibilityRule: 'p4',
+                                isPrimary: true,
+                                isAccent: true,
+                                isEditable: false
+                            }
+                        ]}
+                    />
+                </DocumentResultPanelsGroup>
+                );
 
-    return (
-        <>
-            <BaseDocumentPage
-                formId="bshFiyatFarkiForm"
-                onSubmit={handleSave as any}
-                onSave={handleSave}
-                isSaving={loading}
-                onValidate={() => validateBshFiyatFarkiForm(formData, t)}
-                errors={errors}
-                documentId={id ? parseInt(id) : undefined}
-                documentType="BshFiyatFarki"
-                documentNo={formData.belgeNo}
-                formData={formData}
-                pageTitle={
-                    isEditMode
-                        ? t('BshFiyatFarki_duzenleTitle', 'BSH Fiyat Farkı Düzenle')
-                        : t('BshFiyatFarki_yeniTitle', 'Yeni BSH Fiyat Farkı')
-                }
-                onBack={() => navigate('/bsh-fiyat-farki')}
-                tabs={tabs}
-                activeTabId={activeTab}
-                onTabChange={setActiveTab}
-                extraDropdownActions={bshActionMenu.extraDropdownActions}
-                headerContent={headerContent}
-                footerContent={footerContent}
-                gridProps={{
-                    columns: columns,
-                    data: formData.kalemler,
-                    onChange: (newData: any) => setFormData({ ...formData, kalemler: newData }),
-                    onAddRow: addKalem,
-                    onRemoveRow: (index: number) => removeKalem(formData.kalemler[index]?.id),
-                    isEmptyRow: isEmptyRow,
-                    maxOneEmptyRow: true,
-                    minRows: 10
-                }}
-            />
+                return (
+                <>
+                    <BaseDocumentPage
+                        formId="bshFiyatFarkiForm"
+                        onSubmit={handleSave as any}
+                        onSave={handleSave}
+                        isSaving={loading}
+                        onValidate={() => validateBshFiyatFarkiForm(formData, t)}
+                        errors={errors}
+                        documentId={id ? parseInt(id) : undefined}
+                        documentType="BshFiyatFarki"
+                        documentNo={formData.belgeNo}
+                        formData={formData}
+                        pageTitle={
+                            isEditMode
+                                ? t('BshFiyatFarki_duzenleTitle', 'BSH Fiyat Farkı Düzenle')
+                                : t('BshFiyatFarki_yeniTitle', 'Yeni BSH Fiyat Farkı')
+                        }
+                        onBack={() => navigate('/bsh-fiyat-farki')}
+                        tabs={tabs}
+                        activeTabId={activeTab}
+                        onTabChange={setActiveTab}
+                        extraDropdownActions={bshActionMenu.extraDropdownActions}
+                        headerContent={headerContent}
+                        footerContent={footerContent}
+                        gridProps={{
+                            columns: columns,
+                            data: formData.kalemler,
+                            onChange: (newData: any) => setFormData({ ...formData, kalemler: newData }),
+                            onAddRow: addKalem,
+                            onRemoveRow: (index: number) => removeKalem(formData.kalemler[index]?.id),
+                            isEmptyRow: isEmptyRow,
+                            maxOneEmptyRow: true,
+                            minRows: 10
+                        }}
+                    />
 
-            <UrunSeciciModal
-                isOpen={urunModalOpen}
-                onClose={() => setUrunModalOpen(false)}
-                initialSearchText={urunAramaMetni}
-                onSelect={(urun) => {
-                    const newKalemler = [...formData.kalemler];
-                    const idx = newKalemler.findIndex((k: any) => k.id === activeRowId);
-                    if (idx > -1) {
-                        const currentRow = newKalemler[idx];
-                        const urunKdvOrani = Number(
-                            urun.kdvOrani ?? urun.KdvOrani ?? currentRow.kdvOrani ?? formData.kdvOrani ?? 0
-                        );
-                        const urunKdvGrubuId = resolveKdvGrubuId(
-                            kdvGruplari,
-                            urun.kdvGrubuId ?? urun.KdvGrubuId,
-                            urunKdvOrani
-                        );
-                        const prices = calculateBshKalemPrices({
-                            fiyatGirisYonu: currentRow.fiyatGirisYonu || 'dahil',
-                            kdvHaricFiyat: currentRow.kdvHaricFiyat,
-                            fiyat: currentRow.fiyat,
-                            kdvOrani: urunKdvOrani
-                        });
 
-                        newKalemler[idx] = {
-                            ...currentRow,
-                            urunVeHizmetKartiId: urun.id,
-                            urunVeHizmetAdi: urun.ad,
-                            aramaMetni: urun.ad,
+                    <UrunSeciciModal
+                        isOpen={urunModalOpen}
+                        onClose={() => setUrunModalOpen(false)}
+                        initialSearchText={urunAramaMetni}
+                        onSelect={(urun) => {
+                            const newKalemler = [...formData.kalemler];
+                            const idx = newKalemler.findIndex((k: any) => k.id === activeRowId);
+                            if (idx > -1) {
+                                const currentRow = newKalemler[idx];
+                                const urunKdvOrani = Number(
+                                    urun.kdvOrani ?? urun.KdvOrani ?? currentRow.kdvOrani ?? formData.kdvOrani ?? 0
+                                );
+                                const urunKdvGrubuId = resolveKdvGrubuId(
+                                    kdvGruplari,
+                                    urun.kdvGrubuId ?? urun.KdvGrubuId,
+                                    urunKdvOrani
+                                );
+                                const prices = calculateBshKalemPrices({
+                                    fiyatGirisYonu: currentRow.fiyatGirisYonu || 'dahil',
+                                    kdvHaricFiyat: currentRow.kdvHaricFiyat,
+                                    fiyat: currentRow.fiyat,
+                                    kdvOrani: urunKdvOrani
+                                });
+
+                                newKalemler[idx] = {
+                                    ...currentRow,
+                                    urunVeHizmetKartiId: urun.id,
+                                    urunVeHizmetAdi: urun.ad,
+                                    aramaMetni: urun.ad,
                             tedarikciUrunKodu: urun.kod || currentRow.tedarikciUrunKodu || '',
-                            kdvOrani: urunKdvOrani,
-                            kdvGrubuId: urunKdvGrubuId,
-                            ...prices
-                        };
-                        setFormData({ ...formData, kalemler: newKalemler });
-                    }
-                    setUrunModalOpen(false);
-                }}
-            />
+                                    kdvOrani: urunKdvOrani,
+                                    kdvGrubuId: urunKdvGrubuId,
+                                    ...prices
+                                };
+                                setFormData({ ...formData, kalemler: newKalemler });
+                            }
+                            setUrunModalOpen(false);
+                        }}
+                    />
 
-            <ExcelImportPage
-                isOpen={showExcelImport}
-                onClose={handleCloseExcelImport}
-                onImport={handleExcelImport}
-                documentId={id ? parseInt(id) : undefined}
-                documentType="BshFiyatFarki"
-                columns={excelColumns}
-            />
-        </>
-    );
+                    <ExcelImportPage
+                        isOpen={showExcelImport}
+                        onClose={handleCloseExcelImport}
+                        onImport={handleExcelImport}
+                        documentId={id ? parseInt(id) : undefined}
+                        documentType="BshFiyatFarki"
+                        columns={excelColumns}
+                    />
+                </>
+                );
 };
 
-export default BshFiyatFarkiForm;
+                export default BshFiyatFarkiForm;
