@@ -49,6 +49,7 @@ export * from './defaults/paketVeSetDefaultValue';
 export * from './defaults/kampanyaDefaultValue';
 export * from './defaults/fiyatListesiDefaultValue';
 export * from './defaults/fiyatListesiTanimDefaultValue';
+export * from './defaults/bshFiyatFarkiDefaultValue';
 
 // Yardımcı Araçlar (Utils) & Context
 export * from './utils/stokUtils';
