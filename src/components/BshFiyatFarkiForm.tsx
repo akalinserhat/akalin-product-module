@@ -186,6 +186,24 @@ const BshFiyatFarkiForm: React.FC = () => {
             resolveKdvGrubuId(kdvGruplariRef.current, null, currentHeaderOran) ||
             formDataRef.current?.kdvGrubuId;
 
+        const parseAiKdvDahil = (val: any, fallback: boolean): boolean => {
+            if (val === undefined || val === null) return fallback;
+            if (typeof val === 'boolean') return val;
+            const s = String(val).trim().toLowerCase();
+            if (s === 'false' || s === '0' || s === 'hayir' || s === 'hayır' || s.includes('haric') || s.includes('hariç')) {
+                return false;
+            }
+            if (s === 'true' || s === '1' || s === 'evet' || s.includes('dahil')) {
+                return true;
+            }
+            return Boolean(val);
+        };
+
+        const defaultKdvDahil = parseAiKdvDahil(
+            aiData.kdvDahilMi ?? aiData.header?.kdvDahilMi ?? aiData.kdvDurumu ?? aiData.header?.kdvDurumu,
+            true
+        );
+
         const mappedKalemler = rawItems
             .map((item: any, index: number) => {
                 const code = String(
@@ -201,7 +219,7 @@ const BshFiyatFarkiForm: React.FC = () => {
                 const rawFiyat = Number(item.fiyat ?? item.fiyatFarki ?? item.tutar ?? item.price ?? 0) || 0;
                 const urunId = item.urunVeHizmetKartiId || item.urunVeHizmetId || null;
                 const urunAdi = item.urunVeHizmetAdi || '';
-                const kdvDahilMi = item.kdvDahilMi !== false;
+                const kdvDahilMi = parseAiKdvDahil(item.kdvDahilMi ?? item.kdvDurumu, defaultKdvDahil);
                 const itemKdvOrani =
                     item.kdvOrani !== undefined && item.kdvOrani !== null
                         ? Number(item.kdvOrani)
@@ -212,22 +230,12 @@ const BshFiyatFarkiForm: React.FC = () => {
                     itemKdvOrani
                 );
 
-                const hasExplicitHaric =
-                    item.kdvHaricFiyat !== undefined &&
-                    item.kdvHaricFiyat !== null &&
-                    Number(item.kdvHaricFiyat) > 0;
-
-                const prices = hasExplicitHaric
-                    ? {
-                        kdvHaricFiyat: Number(Number(item.kdvHaricFiyat).toFixed(2)),
-                        fiyat: Number(rawFiyat.toFixed(2))
-                    }
-                    : calculateBshKalemPrices({
-                        fiyatGirisYonu: kdvDahilMi ? 'dahil' : 'haric',
-                        kdvHaricFiyat: kdvDahilMi ? undefined : rawFiyat,
-                        fiyat: kdvDahilMi ? rawFiyat : undefined,
-                        kdvOrani: itemKdvOrani
-                    });
+                const prices = calculateBshKalemPrices({
+                    fiyatGirisYonu: kdvDahilMi ? 'dahil' : 'haric',
+                    kdvHaricFiyat: kdvDahilMi ? undefined : rawFiyat,
+                    fiyat: kdvDahilMi ? rawFiyat : undefined,
+                    kdvOrani: itemKdvOrani
+                });
 
                 return {
                     id: Date.now() + index + Math.random(),
@@ -306,8 +314,10 @@ const BshFiyatFarkiForm: React.FC = () => {
                                 matched.kdvGrubuId,
                                 nextKdvOrani
                             );
+                            const girisYonu: 'haric' | 'dahil' =
+                                k.fiyatGirisYonu || (k.kdvDahilMi === false ? 'haric' : 'dahil');
                             const prices = calculateBshKalemPrices({
-                                fiyatGirisYonu: k.fiyatGirisYonu || (k.kdvDahilMi === false ? 'haric' : 'dahil'),
+                                fiyatGirisYonu: girisYonu,
                                 kdvHaricFiyat: k.kdvHaricFiyat,
                                 fiyat: k.fiyat,
                                 kdvOrani: nextKdvOrani
@@ -319,7 +329,8 @@ const BshFiyatFarkiForm: React.FC = () => {
                                 kdvGrubuId: nextKdvGrubuId,
                                 kdvHaricFiyat: prices.kdvHaricFiyat,
                                 fiyat: prices.fiyat,
-                                kdvDahilMi: true,
+                                fiyatGirisYonu: girisYonu,
+                                kdvDahilMi: k.kdvDahilMi ?? (girisYonu === 'dahil'),
                                 urunVeHizmetKartiId: matched.id,
                                 urunVeHizmetAdi: matched.ad,
                                 aramaMetni: matched.ad
