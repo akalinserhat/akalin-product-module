@@ -140,3 +140,4 @@ export const getBshFiyatFarkiDefaultValues = (options: BshFiyatFarkiDefaultValue
                 : [createEmptyBshFiyatFarkiKalem(headerKdvOrani, headerKdvGrubuId)]
     };
 };
+
