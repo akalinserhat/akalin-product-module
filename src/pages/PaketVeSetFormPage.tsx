@@ -5,6 +5,7 @@ import { toast } from 'react-hot-toast';
 import axios from 'axios';
 import {
     BaseDocumentPage,
+    IdOlusturucuInput,
     DocumentHeaderPanel,
     DocumentHeaderField,
     DocumentResultPanel,
@@ -660,13 +661,17 @@ export const PaketVeSetFormPage: React.FC = () => {
             {activeTab === 1 && (
                 <DocumentHeaderPanel columns={2}>
                     <DocumentHeaderField name="kod" label={t('Paket/Set Kodu')} required>
-                        <BasitInput
+                        <IdOlusturucuInput
+                            id="paket-set-kod-input"
+                            idPrefix="SET"
+                            idLength={8}
+                            hideGenerateWhenFilled={true}
+                            showCopyButton={true}
                             value={formData.kod}
-                            onChange={(e) => handleFieldChange('kod', e.target.value)}
-                            onBlur={() => handleFieldBlur('kod', formData.kod)}
+                            onValueChange={(val) => handleFieldChange('kod', val)}
+                            onBlur={(e) => handleFieldBlur('kod', e?.target?.value ?? formData.kod)}
                             error={!!errors.kod}
                             placeholder={t('Örn: SET-001')}
-                            casing="hepsiBuyuk"
                             autoFocus
                         />
                     </DocumentHeaderField>

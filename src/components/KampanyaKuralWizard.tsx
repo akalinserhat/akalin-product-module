@@ -15,6 +15,7 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     BasitInput,
+    IdOlusturucuInput,
     BaseWizardPage,
     WizardStep,
     BasePopup,
@@ -693,10 +694,15 @@ const KampanyaKuralWizard: React.FC<KampanyaKuralWizardProps> = ({
                                 <label className="form-field-label">
                                     {t('auto_kampanya_kodu', 'Kampanya Kodu')} <span className="text-danger">*</span>
                                 </label>
-                                <BasitInput
+                                <IdOlusturucuInput
+                                    id="kampanya-kodu-input"
+                                    idPrefix="KMP"
+                                    idLength={8}
+                                    hideGenerateWhenFilled={true}
+                                    showCopyButton={true}
                                     value={localKampanya.kodu || ''}
-                                    onChange={(e) => {
-                                        setLocalKampanya({ ...localKampanya, kodu: e.target.value });
+                                    onValueChange={(val) => {
+                                        setLocalKampanya({ ...localKampanya, kodu: val });
                                         clearError('kodu');
                                     }}
                                     placeholder={t('auto_ornek_kod', 'Örn: KMP-001')}

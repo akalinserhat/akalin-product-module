@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Save, X, Hash, Type, AlignLeft, Calendar, ToggleLeft, ShieldAlert, Check, Layers, AlertCircle, Barcode, Tag, Plus } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { IdOlusturucuInput } from '@akalin/ui';
 
 const OzellikTanimForm = ({ initialData, preselectedGroupId, onSuccess, onCancel, onDirtyChange }) => {
   const { t } = useTranslation();
@@ -244,16 +245,20 @@ const OzellikTanimForm = ({ initialData, preselectedGroupId, onSuccess, onCancel
         </div>
         <div>
           <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500' }}>{t('auto_ozellik_sistem_kodu__b5d1')}</label>
-          <input 
-            maxLength={50}
-            type="text" 
+          <IdOlusturucuInput
+            id="ozellik-kod-input"
             name="kod"
+            idPrefix="OZL"
+            idLength={6}
+            maxLength={50}
+            hideGenerateWhenFilled={true}
+            showCopyButton={true}
+            showGenerateButton={!initialData?.id}
             value={formData.kod}
-            onChange={(e) => {
-              e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '');
-              handleChange(e);
+            onValueChange={(val) => {
+              setFormData((prev: any) => ({ ...prev, kod: val }));
+              markDirty();
             }}
-            style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--glass-border)', background: 'var(--bg-primary)', color: 'var(--text-primary)', textTransform: 'uppercase' }}
             placeholder="Örn: RENK"
           />
         </div>
