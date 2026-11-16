@@ -240,6 +240,7 @@ const BshFiyatFarkiForm: React.FC = () => {
                 return {
                     id: Date.now() + index + Math.random(),
                     tedarikciUrunKodu: code,
+                    kampanyaIsmi: String(item.kampanyaIsmi || item.kampanyaAdi || item.tabloAdi || item.kampanya || '').trim(),
                     kdvOrani: itemKdvOrani,
                     kdvGrubuId: itemKdvGrubuId || currentHeaderGrubuId,
                     kdvHaricFiyat: prices.kdvHaricFiyat,
@@ -991,6 +992,111 @@ const BshFiyatFarkiForm: React.FC = () => {
         };
     }, [t]);
 
+    const handleUpdateActiveFormItems = useCallback((payload: any) => {
+        if (!payload) return;
+        const islemTipi = (payload.islemTipi || payload.operation || 'SIL').toUpperCase();
+        const hedefAlan = payload.hedefAlan || payload.targetField || 'kampanyaIsmi';
+        const eslesmeDegeri = payload.eslesmeDegeri ?? payload.matchValue;
+        const eslesmeTipi = (payload.eslesmeTipi || payload.matchType || 'esittir').toLowerCase();
+        const guncellenecekDegerler = payload.guncellenecekDegerler || payload.updateValues || {};
+        const yeniKalemler = payload.yeniKalemler || payload.items || [];
+
+        const resolveItemFieldValue = (item: any, fieldKey: string) => {
+            if (item[fieldKey] !== undefined) return item[fieldKey];
+            const normKey = fieldKey.toLowerCase().replace(/[\s_-]/g, '');
+            for (const k of Object.keys(item)) {
+                if (k.toLowerCase().replace(/[\s_-]/g, '') === normKey) {
+                    return item[k];
+                }
+            }
+            if (normKey.includes('kampanya')) return item.kampanyaIsmi || item.kampanyaAdi || item.kampanya;
+            if (normKey.includes('urun') || normKey.includes('stok') || normKey.includes('kod')) return item.tedarikciUrunKodu || item.urunKodu || item.stokKodu || item.kod;
+            if (normKey.includes('ad') || normKey.includes('tanim')) return item.urunAdi || item.tanim || item.ad;
+            return undefined;
+        };
+
+        setFormData((prev: any) => {
+            let currentKalemler = [...(prev.kalemler || [])];
+
+            const isMatch = (item: any) => {
+                const val = resolveItemFieldValue(item, hedefAlan);
+                if (val === undefined || val === null) return false;
+                const strVal = String(val).trim().toLowerCase();
+                const targetStr = String(eslesmeDegeri ?? '').trim().toLowerCase();
+
+                switch (eslesmeTipi) {
+                    case 'icerir':
+                    case 'contains':
+                        return strVal.includes(targetStr);
+                    case 'ile_baslar':
+                    case 'startswith':
+                        return strVal.startsWith(targetStr);
+                    case 'ile_biter':
+                    case 'endswith':
+                        return strVal.endsWith(targetStr);
+                    case 'regex':
+                        try {
+                            return new RegExp(String(eslesmeDegeri), 'i').test(String(val));
+                        } catch {
+                            return false;
+                        }
+                    case 'esittir':
+                    case 'equals':
+                    default:
+                        return strVal === targetStr;
+                }
+            };
+
+            if (islemTipi === 'SIL' || islemTipi === 'DELETE' || islemTipi === 'REMOVE') {
+                const countBefore = currentKalemler.length;
+                currentKalemler = currentKalemler.filter(item => !isMatch(item));
+                const deletedCount = countBefore - currentKalemler.length;
+                toast.success(t('auto_satirlar_silindi', `${deletedCount} adet satır tablodan silindi.`));
+            } else if (islemTipi === 'FILTRELE' || islemTipi === 'FILTER') {
+                currentKalemler = currentKalemler.filter(item => isMatch(item));
+                toast.success(t('auto_satirlar_filtrelendi', `${currentKalemler.length} adet satır korundu.`));
+            } else if (islemTipi === 'GUNCELLE' || islemTipi === 'UPDATE') {
+                let updatedCount = 0;
+                currentKalemler = currentKalemler.map(item => {
+                    if (isMatch(item)) {
+                        updatedCount++;
+                        return { ...item, ...guncellenecekDegerler };
+                    }
+                    return item;
+                });
+                toast.success(t('auto_satirlar_guncellendi', `${updatedCount} adet satır güncellendi.`));
+            } else if (islemTipi === 'EKLE' || islemTipi === 'ADD') {
+                currentKalemler = [...currentKalemler, ...(Array.isArray(yeniKalemler) ? yeniKalemler : [yeniKalemler])];
+                toast.success(t('auto_yeni_satirlar_eklendi', 'Yeni satırlar eklendi.'));
+            } else if (islemTipi === 'TEMIZLE' || islemTipi === 'CLEAR') {
+                currentKalemler = [];
+                toast.success(t('auto_tum_satirlar_temizlendi', 'Tüm satırlar temizlendi.'));
+            } else if (islemTipi === 'YENIDEN_YAZ' || islemTipi === 'REPLACE') {
+                currentKalemler = Array.isArray(yeniKalemler) ? yeniKalemler : [];
+                toast.success(t('auto_satirlar_yenilendi', 'Tablo satırları yenilendi.'));
+            }
+
+            return {
+                ...prev,
+                kalemler: currentKalemler
+            };
+        });
+    }, [t]);
+
+    useEffect(() => {
+        const handleUpdateEvent = (e: any) => {
+            if (e.detail) {
+                handleUpdateActiveFormItems(e.detail);
+            }
+        };
+        window.addEventListener('ai-update-active-form-items', handleUpdateEvent);
+        window.addEventListener('akalin:mcp-update-active-form-items', handleUpdateEvent);
+        return () => {
+            window.removeEventListener('ai-update-active-form-items', handleUpdateEvent);
+            window.removeEventListener('akalin:mcp-update-active-form-items', handleUpdateEvent);
+        };
+    }, [handleUpdateActiveFormItems]);
+
     const addKalem = () => {
             setFormData((prev: any) => ({
                 ...prev,
@@ -1316,6 +1422,7 @@ const headerContent = (
                         documentType="BshFiyatFarki"
                         documentNo={formData.belgeNo}
                         formData={formData}
+                        onUpdateItems={handleUpdateActiveFormItems}
                         pageTitle={
                             isEditMode
                                 ? t('BshFiyatFarki_duzenleTitle', 'Fiyat Farkı Düzenle')
