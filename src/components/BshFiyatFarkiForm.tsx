@@ -401,18 +401,18 @@ const BshFiyatFarkiForm: React.FC = () => {
 
     const excelColumns: ExcelColumnDef[] = [
         {
-            key: 'tedarikciUrunKodu',
-            label: t('auto_tedarikci_urun_kodu_sutunu', 'Tedarikçi Ürün Kodu Sütunu'),
-            type: 'column',
-            expectedType: 'string',
-            required: true
-        },
-        {
             key: 'kampanyaIsmi',
             label: t('auto_kampanya_ismi_sutunu', 'Kampanya İsmi Sütunu'),
             type: 'column',
             expectedType: 'string',
             required: false
+        },
+        {
+            key: 'tedarikciUrunKodu',
+            label: t('auto_tedarikci_urun_kodu_sutunu', 'Tedarikçi Ürün Kodu Sütunu'),
+            type: 'column',
+            expectedType: 'string',
+            required: true
         },
         {
             key: 'fiyat',
@@ -553,6 +553,30 @@ const BshFiyatFarkiForm: React.FC = () => {
 
     const columns: any[] = [
         {
+            id: 'kampanyaIsmi',
+            header: t('Kampanya İsmi', 'Kampanya İsmi'),
+            width: 180,
+            type: 'text',
+            render: (kalem: any) => (
+                <BasitInput
+                    textTransform="none"
+                    className="form-input spreadsheet-cell-input"
+                    value={kalem.kampanyaIsmi || ''}
+                    onChange={(e) => {
+                        const newKalemler = [...formData.kalemler];
+                        const idx = newKalemler.findIndex((k) => k.id === kalem.id);
+                        if (idx > -1) {
+                            newKalemler[idx] = {
+                                ...newKalemler[idx],
+                                kampanyaIsmi: e.target.value
+                            };
+                            setFormData({ ...formData, kalemler: newKalemler });
+                        }
+                    }}
+                />
+            )
+        },
+        {
             id: 'tedarikciUrunKodu',
             header: t('auto_tedarikci_urun_kodu', 'Tedarikçi Ürün Kodu'),
             width: 180,
@@ -583,30 +607,6 @@ const BshFiyatFarkiForm: React.FC = () => {
                             if (e.currentTarget.value) {
                                 handleCodeLookup(kalem, e.currentTarget.value);
                             }
-                        }
-                    }}
-                />
-            )
-        },
-        {
-            id: 'kampanyaIsmi',
-            header: t('Kampanya İsmi', 'Kampanya İsmi'),
-            width: 180,
-            type: 'text',
-            render: (kalem: any) => (
-                <BasitInput
-                    textTransform="none"
-                    className="form-input spreadsheet-cell-input"
-                    value={kalem.kampanyaIsmi || ''}
-                    onChange={(e) => {
-                        const newKalemler = [...formData.kalemler];
-                        const idx = newKalemler.findIndex((k) => k.id === kalem.id);
-                        if (idx > -1) {
-                            newKalemler[idx] = {
-                                ...newKalemler[idx],
-                                kampanyaIsmi: e.target.value
-                            };
-                            setFormData({ ...formData, kalemler: newKalemler });
                         }
                     }}
                 />
