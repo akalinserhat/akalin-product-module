@@ -340,13 +340,13 @@ export function createProductModule(options: CreateProductModuleOptions = {}): I
       {
         path: '/bsh-fiyat-farki',
         element: React.createElement(ConnectedBshFiyatFarkiListPage),
-        title: 'BSH Fiyat Farkı Listesi',
+        title: 'Fiyat Farkı Listesi',
         requiredPermissions: ['urun.kart.fiyat-listesi.goruntule']
       },
       {
         path: '/bsh-fiyat-farki/yeni',
         element: React.createElement(ConnectedBshFiyatFarkiFormPage),
-        title: 'Yeni BSH Fiyat Farkı',
+        title: 'Yeni Fiyat Farkı',
         requiredPermissions: ['urun.kart.fiyat-listesi.olustur']
       },
       {
@@ -358,7 +358,7 @@ export function createProductModule(options: CreateProductModuleOptions = {}): I
       {
         path: '/bsh-fiyat-farki/duzenle/:id',
         element: React.createElement(ConnectedBshFiyatFarkiFormPage),
-        title: 'BSH Fiyat Farkı Düzenle',
+        title: 'Fiyat Farkı Düzenle',
         requiredPermissions: ['urun.kart.fiyat-listesi.duzenle']
       },
       {
@@ -442,7 +442,7 @@ export function createProductModule(options: CreateProductModuleOptions = {}): I
           },
           {
             id: 'bsh-fiyat-farki-menu',
-            label: 'BSH Fiyat Farkı',
+            label: 'Fiyat Farkı',
             path: '/bsh-fiyat-farki',
             icon: React.createElement(Zap, { size: 16 }),
             order: 5,

@@ -104,6 +104,7 @@ export const createEmptyBshFiyatFarkiKalem = (
     id,
     urunVeHizmetKartiId: null,
     urunVeHizmetAdi: '',
+    kampanyaIsmi: '',
     aramaMetni: '',
     tedarikciUrunKodu: '',
     kdvGrubuId,

@@ -408,6 +408,13 @@ const BshFiyatFarkiForm: React.FC = () => {
             required: true
         },
         {
+            key: 'kampanyaIsmi',
+            label: t('auto_kampanya_ismi_sutunu', 'Kampanya İsmi Sütunu'),
+            type: 'column',
+            expectedType: 'string',
+            required: false
+        },
+        {
             key: 'fiyat',
             label: t('auto_fiyat_sutunu', 'Fiyat Sütunu'),
             type: 'column',
@@ -576,6 +583,30 @@ const BshFiyatFarkiForm: React.FC = () => {
                             if (e.currentTarget.value) {
                                 handleCodeLookup(kalem, e.currentTarget.value);
                             }
+                        }
+                    }}
+                />
+            )
+        },
+        {
+            id: 'kampanyaIsmi',
+            header: t('Kampanya İsmi', 'Kampanya İsmi'),
+            width: 180,
+            type: 'text',
+            render: (kalem: any) => (
+                <BasitInput
+                    textTransform="none"
+                    className="form-input spreadsheet-cell-input"
+                    value={kalem.kampanyaIsmi || ''}
+                    onChange={(e) => {
+                        const newKalemler = [...formData.kalemler];
+                        const idx = newKalemler.findIndex((k) => k.id === kalem.id);
+                        if (idx > -1) {
+                            newKalemler[idx] = {
+                                ...newKalemler[idx],
+                                kampanyaIsmi: e.target.value
+                            };
+                            setFormData({ ...formData, kalemler: newKalemler });
                         }
                     }}
                 />
@@ -977,7 +1008,7 @@ const removeKalem = (rowId: any) => {
         }));
     };
 
-const isEmptyRow = (row: any) => !row.urunVeHizmetKartiId && !row.tedarikciUrunKodu;
+const isEmptyRow = (row: any) => !row.urunVeHizmetKartiId && !row.tedarikciUrunKodu && !row.kampanyaIsmi;
 
 const { handleImport } = useExcelProductImport();
 
@@ -1016,7 +1047,8 @@ const handleExcelImport = async (rawImportedData: any[]) => {
 
             return {
                 tedarikciUrunKodu: importedRow.tedarikciUrunKodu,
-                    kdvOrani,
+                kampanyaIsmi: importedRow.kampanyaIsmi || '',
+                kdvOrani,
                 kdvGrubuId,
                 kdvHaricFiyat: prices.kdvHaricFiyat,
                 fiyat: prices.fiyat,
@@ -1077,7 +1109,7 @@ const handleSave = async (e?: React.FormEvent) => {
             bitisTarihi: formData.bitisTarihi || null,
             belgeNo: formData.belgeNo === '[OTOMATİK]' ? '' : formData.belgeNo,
             kalemler: formData.kalemler
-                .filter((k: any) => k.urunVeHizmetKartiId || k.tedarikciUrunKodu)
+                .filter((k: any) => k.urunVeHizmetKartiId || k.tedarikciUrunKodu || k.kampanyaIsmi)
                 .map((k: any) => {
                     const satirOran =
                         k.kdvOrani !== undefined && k.kdvOrani !== null
@@ -1094,7 +1126,8 @@ const handleSave = async (e?: React.FormEvent) => {
                         id: typeof k.id === 'number' && k.id > 2000000000 ? 0 : k.id,
                         kdvOrani: satirOran,
                         kdvHaricFiyat: k.kdvHaricFiyat ?? prices.kdvHaricFiyat,
-                        fiyat: k.fiyat ?? prices.fiyat
+                        fiyat: k.fiyat ?? prices.fiyat,
+                        kampanyaIsmi: k.kampanyaIsmi || ''
                     };
                 })
         };
@@ -1238,7 +1271,7 @@ const headerContent = (
                 );
 
                 const validRows =
-        formData.kalemler?.filter((k: any) => k.urunVeHizmetKartiId || k.tedarikciUrunKodu) || [];
+        formData.kalemler?.filter((k: any) => k.urunVeHizmetKartiId || k.tedarikciUrunKodu || k.kampanyaIsmi) || [];
     const linkedRowsCount = validRows.filter((k: any) => k.urunVeHizmetKartiId).length;
 
                 const footerContent = (
@@ -1285,8 +1318,8 @@ const headerContent = (
                         formData={formData}
                         pageTitle={
                             isEditMode
-                                ? t('BshFiyatFarki_duzenleTitle', 'BSH Fiyat Farkı Düzenle')
-                                : t('BshFiyatFarki_yeniTitle', 'Yeni BSH Fiyat Farkı')
+                                ? t('BshFiyatFarki_duzenleTitle', 'Fiyat Farkı Düzenle')
+                                : t('BshFiyatFarki_yeniTitle', 'Yeni Fiyat Farkı')
                         }
                         onBack={() => navigate('/bsh-fiyat-farki')}
                         tabs={tabs}

@@ -18,6 +18,7 @@ export const isBshKalemActive = (kalem: any): boolean => {
     if (!kalem) return false;
     return Boolean(
         (kalem.tedarikciUrunKodu && String(kalem.tedarikciUrunKodu).trim() !== '') ||
+        (kalem.kampanyaIsmi && String(kalem.kampanyaIsmi).trim() !== '') ||
         kalem.urunVeHizmetKartiId ||
             (kalem.fiyat !== undefined && kalem.fiyat !== null && kalem.fiyat !== '' && Number(kalem.fiyat) > 0) ||
         (kalem.kdvHaricFiyat !== undefined && kalem.kdvHaricFiyat !== null && kalem.kdvHaricFiyat !== '' && Number(kalem.kdvHaricFiyat) > 0)

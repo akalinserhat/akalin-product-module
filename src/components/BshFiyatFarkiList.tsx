@@ -29,7 +29,7 @@ const BshFiyatFarkiList: React.FC = () => {
 
     return (
         <BaseListPage
-            title={t('nav.bsh_fiyat_farki') || 'BSH Fiyat Farkı'}
+            title={t('nav.bsh_fiyat_farki', 'Fiyat Farkı')}
             apiEndpoint="/api/BshFiyatFarki"
             columns={columns}
             onAddNew={() => navigate('/bsh-fiyat-farki/yeni')}
